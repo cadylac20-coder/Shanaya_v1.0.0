@@ -1,7 +1,6 @@
 import google.generativeai as genai
 from memory import get_history, save_message
 from config import GEMINI_API_KEY, MODEL, TEMPERATURE, MAX_TOKENS, SYSTEM_PROMPT
-from lead_extractor import extract_and_track
 
 print(f"✓ AI Engine loaded — Model: {MODEL}")
 genai.configure(api_key=GEMINI_API_KEY)
@@ -16,14 +15,13 @@ def chat(session_id: str, user_message: str) -> dict:
     history = get_history(session_id)
 
     # Convert history into Gemini-compatible contents list
-    # Gemini expects alternating user/model turns
     contents = []
     for msg in history[:-1]:  # exclude the message we just saved (sent separately)
         role = "model" if msg["role"] == "assistant" else "user"
         contents.append({"role": role, "parts": [{"text": msg["content"]}]})
 
     try:
-        print(f"[CHAT] Calling Gemini model: {MODEL}")
+        print(f"[CHAT] Creating Gemini model: {MODEL}")
         model = genai.GenerativeModel(
             model_name=MODEL,
             system_instruction=SYSTEM_PROMPT,
@@ -40,10 +38,12 @@ def chat(session_id: str, user_message: str) -> dict:
         )
 
         reply = response.text.strip() if response.text else "I didn't get a response. Could you repeat that?"
-        print(f"[CHAT] Reply: {reply[:80]}")
+        print(f"[CHAT] ✓ Got reply: {reply[:80]}")
 
     except Exception as e:
         print(f"[ERROR] {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
         reply = (
             "I'm having a brief technical issue. "
             "Please try again in a moment, or call us directly at +91-120-XXXXXX. 🙏"
@@ -52,15 +52,13 @@ def chat(session_id: str, user_message: str) -> dict:
     # Save assistant reply
     save_message(session_id, "assistant", reply)
 
-    # Extract lead info for the UI progress bar
-    lead_info = extract_and_track(session_id, user_message)
-
+    # Return minimal data (DON'T call lead_extractor to avoid rate limit)
     return {
         "reply":          reply,
         "session_id":     session_id,
-        "extracted_data": lead_info["current_data"],
-        "missing_fields":  lead_info["missing_fields"],
-        "is_complete":    lead_info["complete"],
+        "extracted_data": {},
+        "missing_fields":  [],
+        "is_complete":    False,
     }
 
 
