@@ -547,11 +547,11 @@ POLICIES = {
 }
 
 CONTACT = {
-    "phone": "+91-120-XXXXXX",
-    "email": "support@uniglobemkov.in",
-    "address": "Noida, Uttar Pradesh, India",
+    "phone": "+91 8010700700",
+    "email": "info@uniglobemkov.com",
+    "address": "Uniglobe Mkov Travel, Sector-132, Noida, Uttar Pradesh, India",
     "hours": {
-        "weekday": "9:00 AM - 9:00 PM",
-        "weekend": "10:00 AM - 6:00 PM"
+        "weekday": "9:00 AM -11:00 PM",
+        "weekend": "9:00 AM - 11:00 PM"
     }
 }
