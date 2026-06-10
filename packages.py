@@ -28,6 +28,19 @@ DESTINATIONS = {
                     "Ubud cultural tour"
                 ],
                 "best_for": "Adventure seekers, Young couples"
+            },
+            {
+                "name": "7 Days Exclusive Bali Honeymoon",
+                "nights": 7,
+                "price_per_person": 5000,
+                "currency": "INR",
+                "highlights": [
+                    "Kuta, Ubud & Nusa Dua",
+                    "Candlelight beach dinner & private pool villa",
+                    "Dolphin watching & watersports",
+                    "Balinese spa session & temples"
+                ],
+                "best_for": "Couples, Honeymoon"
             }
         ]
     },
@@ -45,6 +58,19 @@ DESTINATIONS = {
                     "Night market tour"
                 ],
                 "best_for": "Families, Beach lovers"
+            },
+            {
+                "name": "Best Goa Tour Package For Adventure",
+                "nights": 5,
+                "price_per_person": 5000,
+                "currency": "INR",
+                "highlights": [
+                    "Thrilling water sports",
+                    "Beach parties & scuba diving",
+                    "Parasailing & exciting nightlife",
+                    "Adventure activities"
+                ],
+                "best_for": "Adventure seekers, Young travelers"
             }
         ]
     },
@@ -96,6 +122,248 @@ DESTINATIONS = {
                     "Chiang Mai temple visit"
                 ],
                 "best_for": "First-time visitors, Culture + beach"
+            },
+            {
+                "name": "5 Days Thailand Pattaya Tour",
+                "nights": 5,
+                "price_per_person": 5000,
+                "currency": "INR",
+                "highlights": [
+                    "Pattaya beach & city tour",
+                    "Bangkok highlights",
+                    "Nightlife & markets",
+                    "Cultural experiences"
+                ],
+                "best_for": "Families, Beach lovers"
+            }
+        ]
+    },
+    "andaman": {
+        "country": "India",
+        "packages": [
+            {
+                "name": "Romantic Andaman Tour For Couples",
+                "nights": 6,
+                "price_per_person": 5000,
+                "currency": "INR",
+                "highlights": [
+                    "Port Blair, Havelock & Neil Island",
+                    "Pristine beaches & crystal waters",
+                    "Candlelight dinners & island adventures",
+                    "Romantic moments & water activities"
+                ],
+                "best_for": "Couples, Honeymoon"
+            }
+        ]
+    },
+    "kashmir": {
+        "country": "India",
+        "packages": [
+            {
+                "name": "Kashmir Tour For Couples 4N/5D",
+                "nights": 5,
+                "price_per_person": 5000,
+                "currency": "INR",
+                "highlights": [
+                    "Romantic stays & houseboats in Srinagar",
+                    "Snow-covered valleys & Gulmarg",
+                    "Scenic beauty & adventures",
+                    "Unforgettable couple moments"
+                ],
+                "best_for": "Couples, Honeymoon"
+            }
+        ]
+    },
+    "shimla": {
+        "country": "India",
+        "packages": [
+            {
+                "name": "Shimla Tour Package For Family",
+                "nights": 4,
+                "price_per_person": 5000,
+                "currency": "INR",
+                "highlights": [
+                    "Scenic hills & snow-capped mountains",
+                    "Mall Road shopping & Kufri adventures",
+                    "Comfortable stays & nature",
+                    "Family sightseeing & memories"
+                ],
+                "best_for": "Families"
+            }
+        ]
+    },
+    "udaipur": {
+        "country": "India",
+        "packages": [
+            {
+                "name": "5 Days Udaipur City of Lakes",
+                "nights": 5,
+                "price_per_person": 5000,
+                "currency": "INR",
+                "highlights": [
+                    "City Palace, Lake Pichola & Jagdish Temple",
+                    "Kumbhalgarh & Chittorgarh Forts",
+                    "Heritage & lakeside serenity",
+                    "Royal Rajasthan experience"
+                ],
+                "best_for": "Families, Couples, History lovers"
+            }
+        ]
+    },
+    "north-east": {
+        "country": "India",
+        "packages": [
+            {
+                "name": "7 Days North East India Tour",
+                "nights": 7,
+                "price_per_person": 5000,
+                "currency": "INR",
+                "highlights": [
+                    "Shillong hills & waterfalls",
+                    "Kaziranga National Park safaris",
+                    "Guwahati Kamakhya Temple",
+                    "Mawlynnong cleanest village & Dawki"
+                ],
+                "best_for": "Nature lovers, Adventure seekers, Families"
+            }
+        ]
+    },
+    "ayodhya-varanasi": {
+        "country": "India",
+        "packages": [
+            {
+                "name": "4N/5D Ayodhya Varanasi Prayagraj Spiritual",
+                "nights": 5,
+                "price_per_person": 5000,
+                "currency": "INR",
+                "highlights": [
+                    "Ram Mandir Ayodhya",
+                    "Ganga Aarti Varanasi & ghats",
+                    "Triveni Sangam Prayagraj",
+                    "Sarnath Buddhist sites"
+                ],
+                "best_for": "Spiritual seekers, Families"
+            }
+        ]
+    },
+    "madhya-pradesh": {
+        "country": "India",
+        "packages": [
+            {
+                "name": "5 Days Gwalior Orchha Khajuraho",
+                "nights": 5,
+                "price_per_person": 5000,
+                "currency": "INR",
+                "highlights": [
+                    "Gwalior Fort",
+                    "Orchha Temples",
+                    "Khajuraho UNESCO temples",
+                    "Historical & cultural richness"
+                ],
+                "best_for": "History enthusiasts, Culture lovers"
+            }
+        ]
+    },
+    "canada": {
+        "country": "Canada",
+        "packages": [
+            {
+                "name": "Rocky Mountain Trail Canada",
+                "nights": 10,
+                "price_per_person": 5000,
+                "currency": "INR",
+                "highlights": [
+                    "Banff & Jasper National Parks",
+                    "Lake Louise & Athabasca Glacier",
+                    "Whistler & Victoria",
+                    "Vancouver city tour"
+                ],
+                "best_for": "Nature lovers, Adventure"
+            },
+            {
+                "name": "Vancouver & Alaska Cruise",
+                "nights": 10,
+                "price_per_person": 5000,
+                "currency": "INR",
+                "highlights": [
+                    "Vancouver city tour",
+                    "7-night Alaska cruise",
+                    "Juneau, Skagway & Hubbard Glacier",
+                    "Ketchikan & scenic beauty"
+                ],
+                "best_for": "Cruise enthusiasts, Families"
+            }
+        ]
+    },
+    "usa-canada": {
+        "country": "USA & Canada",
+        "packages": [
+            {
+                "name": "USA with Canada Endless Memories",
+                "nights": 9,
+                "price_per_person": 5000,
+                "currency": "INR",
+                "highlights": [
+                    "New York city tour",
+                    "Washington & Philadelphia",
+                    "Niagara Falls",
+                    "Toronto highlights"
+                ],
+                "best_for": "First-time visitors, Families"
+            }
+        ]
+    },
+    "hong-kong": {
+        "country": "Hong Kong",
+        "packages": [
+            {
+                "name": "6 Days Hong Kong Macau Luxury Family",
+                "nights": 6,
+                "price_per_person": 5000,
+                "currency": "INR",
+                "highlights": [
+                    "Hong Kong Disneyland & Ocean Park",
+                    "Macau Ruins of St. Paul & temples",
+                    "Night ferry tour",
+                    "Luxury family experiences"
+                ],
+                "best_for": "Families"
+            }
+        ]
+    },
+    "mauritius": {
+        "country": "Mauritius",
+        "packages": [
+            {
+                "name": "5 Days Mauritius Honeymoon",
+                "nights": 5,
+                "price_per_person": 5000,
+                "currency": "INR",
+                "highlights": [
+                    "Ile aux Cerfs beaches & watersports",
+                    "North & South Island tours",
+                    "Chamarel Seven Colored Earth",
+                    "Luxury beachfront resorts"
+                ],
+                "best_for": "Couples, Honeymoon"
+            }
+        ]
+    },
+    "japan": {
+        "country": "Japan",
+        "packages": [
+            {
+                "name": "12 Days Classical Japan Tour",
+                "nights": 12,
+                "price_per_person": 5000,
+                "currency": "INR",
+                "highlights": [
+                    "Tokyo temples & Mt. Fuji",
+                    "Kyoto Golden Pavilion & Fushimi Inari",
+                    "Hiroshima Peace Memorial",
+                    "Osaka Castle & bullet train"
+                ],
+                "best_for": "Culture & heritage enthusiasts"
             }
         ]
     }
