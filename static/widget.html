@@ -384,6 +384,18 @@
             div.textContent = text;
             return div.innerHTML;
         }
+        // Locate your cross/close element identifier
+        const closeBtn = document.getElementById('close-widget-btn') || document.querySelector('.close-icon');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                // Minimize/Hide internally 
+                document.getElementById('umkov-chat-window').style.display = 'none';
+                // CRITICAL: Shout to the parent WordPress page to shrink the iframe window wrapper
+                window.parent.postMessage({ action: 'close_umkov_widget' }, '*');
+            });
+        }
 
         function closeChat() {
             if (window.parent !== window) {
