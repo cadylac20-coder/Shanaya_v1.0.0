@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shaina — MKOV Travel Assistant</title>
+<title>Shanaya — MKOV Travel Assistant</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -29,7 +29,7 @@
 body { background: transparent; font-family: 'DM Sans', sans-serif; overflow: hidden; }
 
 /* ── Launcher ────────────────────────────────────────────────────────────── */
-#shaina-launcher {
+#Shanaya-launcher {
   position: fixed; bottom: 24px; right: 24px; z-index: 9998;
   display: flex; align-items: center; gap: 10px;
   background: linear-gradient(135deg, var(--navy), var(--navy-mid));
@@ -40,8 +40,8 @@ body { background: transparent; font-family: 'DM Sans', sans-serif; overflow: hi
   transition: transform var(--ease), box-shadow var(--ease);
   user-select: none;
 }
-#shaina-launcher:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(13,48,85,0.38); }
-#shaina-launcher:active { transform: translateY(0); }
+#Shanaya-launcher:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(13,48,85,0.38); }
+#Shanaya-launcher:active { transform: translateY(0); }
 
 .lnch-avatar {
   width: 38px; height: 38px; border-radius: 50%; overflow: hidden;
@@ -59,7 +59,7 @@ body { background: transparent; font-family: 'DM Sans', sans-serif; overflow: hi
 .lnch-text span   { font-size: 10.5px; opacity: 0.72; font-weight: 300; }
 
 /* ── Widget panel ────────────────────────────────────────────────────────── */
-#shaina-widget {
+#Shanaya-widget {
   position: fixed; bottom: 90px; right: 24px; z-index: 9999;
   width: 400px; height: 600px;
   border-radius: var(--r); overflow: hidden;
@@ -69,12 +69,12 @@ body { background: transparent; font-family: 'DM Sans', sans-serif; overflow: hi
   transform: scale(0.9) translateY(24px); opacity: 0; pointer-events: none;
   transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.22s ease;
 }
-#shaina-widget.open {
+#Shanaya-widget.open {
   transform: scale(1) translateY(0); opacity: 1; pointer-events: all;
 }
 @media(max-width:480px){
-  #shaina-widget { width: calc(100vw - 16px); height: 88vh; right: 8px; bottom: 82px; }
-  #shaina-launcher { right: 12px; bottom: 12px; }
+  #Shanaya-widget { width: calc(100vw - 16px); height: 88vh; right: 8px; bottom: 82px; }
+  #Shanaya-launcher { right: 12px; bottom: 12px; }
 }
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
@@ -195,32 +195,32 @@ body { background: transparent; font-family: 'DM Sans', sans-serif; overflow: hi
 <body>
 
 <!-- ── Launcher ────────────────────────────────────────────────────────────── -->
-<button id="shaina-launcher" onclick="toggleWidget()" aria-label="Chat with Shaina">
+<button id="Shanaya-launcher" onclick="toggleWidget()" aria-label="Chat with Shanaya">
   <div class="lnch-avatar">
     <!-- Replace src with your actual profile picture URL or base64 -->
-    <img src="https://arya-v1-0-0.onrender.com/static/shaina-avatar.jpg"
+    <img src="https://arya-v1-0-0.onrender.com/static/Shanaya-avatar.jpg"
          onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\'font-family:Cormorant Garamond,serif;font-size:18px;font-weight:600;color:#fff;display:flex;align-items:center;justify-content:center;height:100%\'>S</span>'"
-         alt="Shaina">
+         alt="Shanaya">
     <div class="lnch-pulse"></div>
   </div>
   <div class="lnch-text">
-    <strong>Chat with Shaina</strong>
+    <strong>Chat with Shanaya</strong>
     <span>MKOV Travel Assistant</span>
   </div>
 </button>
 
 <!-- ── Widget panel ────────────────────────────────────────────────────────── -->
-<div id="shaina-widget" role="dialog" aria-label="Shaina Travel Chatbot">
+<div id="Shanaya-widget" role="dialog" aria-label="Shanaya Travel Chatbot">
 
   <!-- Header -->
   <div class="s-header">
     <div class="h-avatar">
-      <img src="https://arya-v1-0-0.onrender.com/static/shaina-avatar.jpg"
+      <img src="https://arya-v1-0-0.onrender.com/static/Shanaya-avatar.jpg"
            onerror="this.style.display='none'"
-           alt="Shaina">
+           alt="Shanaya">
     </div>
     <div class="h-info">
-      <div class="h-name">Shaina</div>
+      <div class="h-name">Shanaya</div>
       <div class="h-online"><span>Online 24 / 7</span></div>
       <div class="h-sub">Uniglobe MKOV Travel</div>
     </div>
@@ -270,7 +270,7 @@ let isMinimised  = false;
 window.addEventListener('load', () => {
   // If inside WP iframe: auto-open panel, hide launcher
   if (window.parent !== window) {
-    document.getElementById('shaina-launcher').style.display = 'none';
+    document.getElementById('Shanaya-launcher').style.display = 'none';
     openPanel();
   }
   setTimeout(showWelcome, 400);
@@ -279,8 +279,8 @@ window.addEventListener('load', () => {
 // ── postMessage from WordPress parent page ────────────────────────
 window.addEventListener('message', function(e) {
   if (!e.data) return;
-  if (e.data.action === 'open_shaina')   { openPanel(); }
-  if (e.data.action === 'close_shaina')  { closeWidget(); }
+  if (e.data.action === 'open_Shanaya')   { openPanel(); }
+  if (e.data.action === 'close_Shanaya')  { closeWidget(); }
 });
 
 function showWelcome() {
@@ -298,7 +298,7 @@ function showWelcome() {
 // WIDGET OPEN / CLOSE / MINIMISE
 // ══════════════════════════════════════════════════════════════════
 function toggleWidget() {
-  const w = document.getElementById('shaina-widget');
+  const w = document.getElementById('Shanaya-widget');
   if (w.classList.contains('open')) {
     closeWidget();
   } else {
@@ -308,20 +308,20 @@ function toggleWidget() {
 
 function openPanel() {
   isMinimised = false;
-  const w = document.getElementById('shaina-widget');
+  const w = document.getElementById('Shanaya-widget');
   w.classList.add('open');
-  document.getElementById('shaina-launcher').style.display = 'none';
+  document.getElementById('Shanaya-launcher').style.display = 'none';
   setTimeout(() => document.getElementById('chat-input').focus(), 300);
 }
 
 function minimiseWidget() {
   // Collapse widget but keep launcher visible so user can reopen
   isMinimised = true;
-  document.getElementById('shaina-widget').classList.remove('open');
-  document.getElementById('shaina-launcher').style.display = 'flex';
+  document.getElementById('Shanaya-widget').classList.remove('open');
+  document.getElementById('Shanaya-launcher').style.display = 'flex';
   // Tell parent WP page to shrink iframe back to 0×0
   if (window.parent !== window) {
-    window.parent.postMessage({ action: 'close_shaina' }, '*');
+    window.parent.postMessage({ action: 'close_Shanaya' }, '*');
   }
 }
 
@@ -371,7 +371,7 @@ async function sendMessage() {
 
   } catch(err) {
     hideTyping();
-    console.error('Shaina error:', err);
+    console.error('Shanaya error:', err);
     appendBot(
       'I\'m having a brief connection issue. 🙏 ' +
       'Please try again, or call us at **+91-9999-XXXXXX**.'
@@ -387,7 +387,7 @@ function sendChip(label) {
 // ══════════════════════════════════════════════════════════════════
 // MESSAGE RENDERING
 // ══════════════════════════════════════════════════════════════════
-const AVATAR_URL = 'https://arya-v1-0-0.onrender.com/static/shaina-avatar.jpg';
+const AVATAR_URL = 'https://arya-v1-0-0.onrender.com/static/Shanaya-avatar.jpg';
 
 function appendBot(text) {
   isTyping = false;
