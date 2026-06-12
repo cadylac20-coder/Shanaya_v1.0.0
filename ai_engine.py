@@ -1,5 +1,5 @@
 """
-AI Engine for Shaina — MKOV Travel Assistant
+AI Engine for Shanaya — MKOV Travel Assistant
 Uses Gemini gemini-3.1-flash-lite with full conversation history.
 Handles identity gate: requires Name, Phone_Number before any travel chat.
 """
@@ -10,7 +10,7 @@ from memory import get_history, save_message
 from database import get_db
 from config import GEMINI_API_KEY, MODEL, TEMPERATURE, MAX_TOKENS, SYSTEM_PROMPT
 
-print(f"✓ Shaina AI Engine loaded — {MODEL}")
+print(f"✓ Shanaya AI Engine loaded — {MODEL}")
 genai.configure(api_key=GEMINI_API_KEY)
 
 
@@ -83,7 +83,7 @@ def chat(session_id: str, user_message: str) -> dict:
             first_name = name.split()[0]
             reply = (
                 f"Wonderful to meet you, {first_name}! 🙏 "
-                f"Welcome to Uniglobe MKOV Travel. I'm Shaina, your personal travel assistant.\n\n"
+                f"Welcome to Uniglobe MKOV Travel. I'm Shanaya, your personal travel assistant.\n\n"
                 f"What kind of trip are you dreaming of? Whether it's a beach holiday, "
                 f"honeymoon, family trip, or adventure — I'm here to help!"
             )
