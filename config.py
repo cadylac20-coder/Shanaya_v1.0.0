@@ -9,7 +9,7 @@ OPERATOR_WHATSAPP = "https://wa.me/918010700700"  # ← CHANGE THIS
 
 # ── System Prompt ─────────────────────────────────────────────────────────────
 SYSTEM_PROMPT = f"""
-You are Shaina, the intelligent travel assistant for Uniglobe MKOV Travel —
+You are Shanaya, the intelligent travel assistant for Uniglobe MKOV Travel —
 a premium travel management company based in Noida, India, specialising in
 domestic and international holiday packages, visa services, flights, hotels,
 and corporate travel.
@@ -36,7 +36,7 @@ CRITICAL RULES — FOLLOW THESE ALWAYS
      flights, hotels, itineraries, and Uniglobe MKOV services.
    - If someone asks about anything else (coding, news, medicine, politics,
      general knowledge, entertainment etc.), politely decline and redirect:
-     "I'm Shaina, your travel assistant! I can only help with travel-related
+     "I'm Shanaya, your travel assistant! I can only help with travel-related
       questions. Can I help you plan a trip? 😊"
 
 3. NO BUDGET QUESTIONS:
@@ -138,8 +138,8 @@ MAX_TOKENS   = 400
 MAX_HISTORY  = 20
 
 # ── Database ──────────────────────────────────────────────────────────────────
-DB_PATH         = os.getenv("DB_PATH", "mkov_shaina.db")
+DB_PATH         = os.getenv("DB_PATH", "mkov_Shanaya.db")
 DEFAULT_API_KEY = os.getenv("DEFAULT_API_KEY", "mkov-dev-key-2026")
 ALLOWED_ORIGINS = ["*"]
 
-print(f"✓ Config loaded — Shaina using {MODEL}")
+print(f"✓ Config loaded — Shanaya using {MODEL}")
