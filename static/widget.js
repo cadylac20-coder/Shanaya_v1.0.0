@@ -222,7 +222,7 @@
         inputEl.value = '';
 
         try {
-            const response = await fetch('/chat', {
+            const response = await fetch('/widget/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
