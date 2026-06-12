@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-DB_PATH = os.getenv("DB_PATH", "mkov_shaina.db")
+DB_PATH = os.getenv("DB_PATH", "mkov_shanaya.db")
 
 
 def get_db() -> sqlite3.Connection:
