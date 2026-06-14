@@ -4,10 +4,9 @@ from database import get_db
 
 api_key_header = APIKeyHeader(name="X-API-Key", description="MKOV API key")
 
-
 def verify_api_key(key: str = Security(api_key_header)) -> dict:
     conn = get_db()
-    row = conn.execute(
+    row  = conn.execute(
         "SELECT name FROM api_keys WHERE key = ? AND active = 1", (key,)
     ).fetchone()
     conn.close()
