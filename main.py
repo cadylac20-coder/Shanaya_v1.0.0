@@ -1,5 +1,5 @@
 """
-MKOV Shanaya Travel AI — FastAPI Backend v2.0
+MKOV Shanaya Travel AI — FastAPI Backend v3.0
 """
 
 import os
@@ -19,13 +19,12 @@ from memory import clear_history, get_session_summary
 from auth import verify_api_key
 from config import ALLOWED_ORIGINS
 
-# ── Init ──────────────────────────────────────────────────────────────────────
 init_db()
 
 app = FastAPI(
     title="MKOV Shanaya Travel AI",
-    description="AI travel assistant for Uniglobe MKOV — Shanaya",
-    version="2.0.0",
+    description="AI travel assistant — Shanaya by Uniglobe MKOV",
+    version="3.0.0",
     docs_url="/docs",
 )
 
@@ -52,8 +51,8 @@ class ActionType(str, Enum):
     CUSTOM_REQUEST   = "custom_request"
 
 class ChatRequest(BaseModel):
-    message:    str            = Field(..., min_length=1, max_length=2000)
-    session_id: Optional[str]  = None
+    message:    str           = Field(..., min_length=1, max_length=2000)
+    session_id: Optional[str] = None
 
 class ActionRequest(BaseModel):
     action:     ActionType
@@ -75,11 +74,11 @@ class ActionResponse(BaseModel):
     data:    Optional[dict] = None
 
 
-# ── Health ────────────────────────────────────────────────────────────────────
+# ── Health & widget serving ───────────────────────────────────────────────────
 
 @app.get("/")
 def root():
-    return {"status": "online", "service": "MKOV Shanaya v2.0", "chatbot": "Shanaya"}
+    return {"status": "online", "service": "MKOV Shanaya v3.0"}
 
 @app.get("/health")
 def health():
@@ -93,13 +92,13 @@ def serve_widget():
     return {"error": "widget.html not found in static/"}
 
 
-# ── PUBLIC routes — called by browser widget, no API key needed ───────────────
+# ── PUBLIC routes — no API key, called by browser widget ─────────────────────
 
 @app.post("/widget/chat", response_model=ChatResponse)
 def widget_chat_public(req: ChatRequest):
-    session = req.session_id or str(uuid.uuid4())
-    result  = chat(session, req.message)
-    suggested = _suggest_actions(result.get("extracted_data", {}), result.get("is_complete", False))
+    session   = req.session_id or str(uuid.uuid4())
+    result    = chat(session, req.message)
+    suggested = _suggest_actions(result.get("extracted_data", {}))
     progress  = _lead_progress(result.get("extracted_data", {}))
     return ChatResponse(
         reply=result["reply"],
@@ -111,48 +110,16 @@ def widget_chat_public(req: ChatRequest):
 
 @app.post("/widget/action", response_model=ActionResponse)
 def widget_action_public(req: ActionRequest):
-    try:
-        if req.action == ActionType.GET_CONFIRMATION:
-            result = actions.get_booking_confirmation(req.session_id, req.booking_id)
-        elif req.action == ActionType.HOLD_BOOKING:
-            dest  = (req.details or {}).get("destination")
-            dates = (req.details or {}).get("travel_dates")
-            hrs   = (req.details or {}).get("duration_hours", 24)
-            result = actions.hold_booking(req.session_id, dest, dates, hrs)
-        elif req.action == ActionType.CANCEL_BOOKING:
-            bid    = req.booking_id or (req.details or {}).get("booking_id")
-            reason = (req.details or {}).get("reason")
-            result = actions.cancel_booking(req.session_id, bid, reason)
-        elif req.action == ActionType.ADD_ANCILLARY:
-            bid   = req.booking_id or (req.details or {}).get("booking_id")
-            atype = (req.details or {}).get("type")
-            dets  = (req.details or {}).get("details")
-            result = actions.add_ancillary(req.session_id, bid, atype, dets)
-        elif req.action == ActionType.PAYMENT_LINK:
-            bid = req.booking_id or (req.details or {}).get("booking_id")
-            result = actions.generate_payment_link(req.session_id, bid)
-        elif req.action == ActionType.CUSTOM_REQUEST:
-            text = (req.details or {}).get("request_text", "No details provided")
-            result = actions.process_custom_request(req.session_id, text)
-        else:
-            result = {"status": "error", "message": f"Unknown action: {req.action}"}
-    except Exception as e:
-        result = {"status": "error", "message": f"Action failed: {str(e)}"}
-    return ActionResponse(
-        status=result.get("status", "error"),
-        action=req.action,
-        message=result.get("message", ""),
-        data={k: v for k, v in result.items() if k not in ("message", "status")},
-    )
+    return _run_action(req)
 
 
 # ── PROTECTED routes — require X-API-Key header ───────────────────────────────
 
 @app.post("/chat", response_model=ChatResponse)
 def chat_endpoint(req: ChatRequest, caller=Depends(verify_api_key)):
-    session = req.session_id or str(uuid.uuid4())
-    result  = chat(session, req.message)
-    suggested = _suggest_actions(result.get("extracted_data", {}), result.get("is_complete", False))
+    session   = req.session_id or str(uuid.uuid4())
+    result    = chat(session, req.message)
+    suggested = _suggest_actions(result.get("extracted_data", {}))
     progress  = _lead_progress(result.get("extracted_data", {}))
     return ChatResponse(
         reply=result["reply"],
@@ -162,61 +129,26 @@ def chat_endpoint(req: ChatRequest, caller=Depends(verify_api_key)):
         identity_given=result.get("identity_given", False),
     )
 
-@app.get("/leads", response_model=None)
+@app.post("/action", response_model=ActionResponse)
+def execute_action(req: ActionRequest, caller=Depends(verify_api_key)):
+    return _run_action(req)
+
+@app.get("/leads")
 def get_all_leads(caller=Depends(verify_api_key)):
     """
-    Admin endpoint — returns all captured leads (name + phone + trip details).
-    Call with: GET /leads  header: X-API-Key: mkov-dev-key-2026
+    Admin endpoint — all captured leads with name, phone, visit count.
+    GET /leads   Header: X-API-Key: mkov-dev-key-2026
     """
     conn = get_db()
     rows = conn.execute(
-        """SELECT session_id, contact_name, contact_phone, destination,
-                  travel_dates, group_size, trip_type, created_at, updated_at
+        """SELECT contact_name, contact_phone, destination, travel_dates,
+                  group_size, trip_type, visit_count, first_seen, last_seen
            FROM leads
            WHERE identity_given = 1
-           ORDER BY created_at DESC"""
+           ORDER BY last_seen DESC"""
     ).fetchall()
     conn.close()
-    return {
-        "total": len(rows),
-        "leads": [dict(r) for r in rows]
-    }
-
-@app.post("/action", response_model=ActionResponse)
-def execute_action(req: ActionRequest, caller=Depends(verify_api_key)):
-    try:
-        if req.action == ActionType.GET_CONFIRMATION:
-            result = actions.get_booking_confirmation(req.session_id, req.booking_id)
-        elif req.action == ActionType.HOLD_BOOKING:
-            dest  = (req.details or {}).get("destination")
-            dates = (req.details or {}).get("travel_dates")
-            hrs   = (req.details or {}).get("duration_hours", 24)
-            result = actions.hold_booking(req.session_id, dest, dates, hrs)
-        elif req.action == ActionType.CANCEL_BOOKING:
-            bid    = req.booking_id or (req.details or {}).get("booking_id")
-            reason = (req.details or {}).get("reason")
-            result = actions.cancel_booking(req.session_id, bid, reason)
-        elif req.action == ActionType.ADD_ANCILLARY:
-            bid   = req.booking_id or (req.details or {}).get("booking_id")
-            atype = (req.details or {}).get("type")
-            dets  = (req.details or {}).get("details")
-            result = actions.add_ancillary(req.session_id, bid, atype, dets)
-        elif req.action == ActionType.PAYMENT_LINK:
-            bid = req.booking_id or (req.details or {}).get("booking_id")
-            result = actions.generate_payment_link(req.session_id, bid)
-        elif req.action == ActionType.CUSTOM_REQUEST:
-            text = (req.details or {}).get("request_text", "No details provided")
-            result = actions.process_custom_request(req.session_id, text)
-        else:
-            result = {"status": "error", "message": f"Unknown action: {req.action}"}
-    except Exception as e:
-        result = {"status": "error", "message": f"Action failed: {str(e)}"}
-    return ActionResponse(
-        status=result.get("status", "error"),
-        action=req.action,
-        message=result.get("message", ""),
-        data={k: v for k, v in result.items() if k not in ("message", "status")},
-    )
+    return {"total": len(rows), "leads": [dict(r) for r in rows]}
 
 @app.delete("/chat/{session_id}")
 def reset_conversation(session_id: str, caller=Depends(verify_api_key)):
@@ -228,13 +160,51 @@ def get_summary(session_id: str, caller=Depends(verify_api_key)):
     return get_session_summary(session_id)
 
 
+# ── Shared action runner ──────────────────────────────────────────────────────
+
+def _run_action(req: ActionRequest) -> ActionResponse:
+    try:
+        if req.action == ActionType.GET_CONFIRMATION:
+            result = actions.get_booking_confirmation(req.session_id, req.booking_id)
+        elif req.action == ActionType.HOLD_BOOKING:
+            dest  = (req.details or {}).get("destination")
+            dates = (req.details or {}).get("travel_dates")
+            hrs   = (req.details or {}).get("duration_hours", 24)
+            result = actions.hold_booking(req.session_id, dest, dates, hrs)
+        elif req.action == ActionType.CANCEL_BOOKING:
+            bid    = req.booking_id or (req.details or {}).get("booking_id")
+            reason = (req.details or {}).get("reason")
+            result = actions.cancel_booking(req.session_id, bid, reason)
+        elif req.action == ActionType.ADD_ANCILLARY:
+            bid   = req.booking_id or (req.details or {}).get("booking_id")
+            atype = (req.details or {}).get("type")
+            dets  = (req.details or {}).get("details")
+            result = actions.add_ancillary(req.session_id, bid, atype, dets)
+        elif req.action == ActionType.PAYMENT_LINK:
+            bid = req.booking_id or (req.details or {}).get("booking_id")
+            result = actions.generate_payment_link(req.session_id, bid)
+        elif req.action == ActionType.CUSTOM_REQUEST:
+            text = (req.details or {}).get("request_text", "No details provided")
+            result = actions.process_custom_request(req.session_id, text)
+        else:
+            result = {"status": "error", "message": f"Unknown action: {req.action}"}
+    except Exception as e:
+        result = {"status": "error", "message": f"Action failed: {str(e)}"}
+    return ActionResponse(
+        status=result.get("status", "error"),
+        action=req.action,
+        message=result.get("message", ""),
+        data={k: v for k, v in result.items() if k not in ("message", "status")},
+    )
+
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-def _suggest_actions(data: dict, is_complete: bool) -> list:
+def _suggest_actions(data: dict) -> list:
     suggestions = []
-    if data.get("destination"):
+    if data.get("contact_name"):
         suggestions.append({"action": "custom_request", "label": "💬 Talk to a Travel Expert", "description": "Connect with our specialist"})
-    suggestions.append({"action": "custom_request", "label": "📞 Call Us", "description": "Speak to our team directly"})
+    suggestions.append({"action": "custom_request", "label": "📞 Call Us", "description": "+91 8010700700"})
     return suggestions
 
 def _lead_progress(data: dict) -> dict:
