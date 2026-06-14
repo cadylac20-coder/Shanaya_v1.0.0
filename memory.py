@@ -38,7 +38,10 @@ def get_session_summary(session_id: str) -> dict:
         (session_id,)
     ).fetchall()
     lead = conn.execute(
-        "SELECT contact_name, contact_phone, destination, travel_dates FROM leads WHERE session_id = ?",
+        """SELECT l.contact_name, l.contact_phone, l.destination,
+                  l.travel_dates, l.visit_count
+           FROM leads l JOIN sessions s ON s.lead_id = l.id
+           WHERE s.session_id = ?""",
         (session_id,)
     ).fetchone()
     conn.close()
