@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shanaya — MKOV Travel Assistant</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -25,181 +26,257 @@
   --r:          16px;
   --r-sm:       10px;
   --ease:       0.22s cubic-bezier(0.4,0,0.2,1);
+  /* ── WIDGET SIZE — slightly smaller than before ── */
+  --widget-w:   370px;
+  --widget-h:   560px;
 }
 body { background: transparent; font-family: 'DM Sans', sans-serif; overflow: hidden; }
 
-/* ── Launcher ────────────────────────────────────────────────────────────── */
+/* ── Launcher ─────────────────────────────────────────────────────────── */
 #Shanaya-launcher {
   position: fixed; bottom: 24px; right: 24px; z-index: 9998;
   display: flex; align-items: center; gap: 10px;
   background: linear-gradient(135deg, var(--navy), var(--navy-mid));
   color: var(--white); border: none; border-radius: 32px;
   padding: 10px 18px 10px 10px; cursor: pointer;
-  box-shadow: 0 8px 28px rgba(13,48,85,0.30);
+  box-shadow: 0 8px 28px rgba(13,48,85,.30);
   font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 500;
   transition: transform var(--ease), box-shadow var(--ease);
   user-select: none;
 }
-#Shanaya-launcher:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(13,48,85,0.38); }
+#Shanaya-launcher:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(13,48,85,.38); }
 #Shanaya-launcher:active { transform: translateY(0); }
 
-.lnch-avatar {
-  width: 38px; height: 38px; border-radius: 50%; overflow: hidden;
-  border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0; position: relative;
-  background: var(--navy-light);
+.lnch-av {
+  width: 36px; height: 36px; border-radius: 50%; overflow: hidden;
+  border: 2px solid rgba(255,255,255,.3); flex-shrink: 0; position: relative;
+  background: var(--navy-light); display: flex; align-items: center; justify-content: center;
 }
-.lnch-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.lnch-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .lnch-pulse {
   position: absolute; bottom: 0; right: 0;
   width: 10px; height: 10px; background: #4ade80;
   border-radius: 50%; border: 2px solid var(--white);
+  animation: pulse-dot 2.5s ease-in-out infinite;
 }
+@keyframes pulse-dot { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.5);opacity:.5} }
 .lnch-text { display: flex; flex-direction: column; line-height: 1.2; }
 .lnch-text strong { font-size: 13.5px; font-weight: 500; }
-.lnch-text span   { font-size: 10.5px; opacity: 0.72; font-weight: 300; }
+.lnch-text span   { font-size: 10.5px; opacity: .72; font-weight: 300; }
 
-/* ── Widget panel ────────────────────────────────────────────────────────── */
+/* ── Widget panel ─────────────────────────────────────────────────────── */
 #Shanaya-widget {
-  position: fixed; bottom: 90px; right: 24px; z-index: 9999;
-  width: 400px; height: 600px;
+  position: fixed; bottom: 88px; right: 24px; z-index: 9999;
+  width: var(--widget-w); height: var(--widget-h);
   border-radius: var(--r); overflow: hidden;
   background: var(--white); box-shadow: var(--shadow-lg);
   display: flex; flex-direction: column;
   border: 1px solid var(--border);
-  transform: scale(0.9) translateY(24px); opacity: 0; pointer-events: none;
-  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.22s ease;
+  transform: scale(0.9) translateY(20px); opacity: 0; pointer-events: none;
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .22s ease;
 }
-#Shanaya-widget.open {
-  transform: scale(1) translateY(0); opacity: 1; pointer-events: all;
-}
+#Shanaya-widget.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
+
 @media(max-width:480px){
-  #Shanaya-widget { width: calc(100vw - 16px); height: 88vh; right: 8px; bottom: 82px; }
+  #Shanaya-widget { width: calc(100vw - 12px); height: 85vh; right: 6px; bottom: 80px; }
   #Shanaya-launcher { right: 12px; bottom: 12px; }
 }
 
-/* ── Header ──────────────────────────────────────────────────────────────── */
+/* ── Header ───────────────────────────────────────────────────────────── */
 .s-header {
   background: linear-gradient(135deg, var(--navy) 0%, #1a5a8a 60%, #1d6fa8 100%);
-  padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+  padding: 13px 15px 12px; display: flex; align-items: center; gap: 11px;
   flex-shrink: 0; position: relative; overflow: hidden;
 }
-.s-header::before { content:''; position:absolute; right:-20px; top:-20px; width:90px; height:90px; border-radius:50%; background:rgba(255,255,255,0.04); }
-.s-header::after  { content:''; position:absolute; right:25px; bottom:-30px; width:70px; height:70px; border-radius:50%; background:rgba(255,255,255,0.03); }
+.s-header::before { content:''; position:absolute; right:-18px; top:-18px; width:80px; height:80px; border-radius:50%; background:rgba(255,255,255,.04); }
+.s-header::after  { content:''; position:absolute; right:22px; bottom:-28px; width:65px; height:65px; border-radius:50%; background:rgba(255,255,255,.03); }
 
-.h-avatar {
-  width: 44px; height: 44px; border-radius: 50%; overflow: hidden;
-  border: 2.5px solid rgba(255,255,255,0.3); flex-shrink: 0; z-index: 1;
-  background: var(--navy-light);
+.h-av {
+  width: 42px; height: 42px; border-radius: 50%; overflow: hidden;
+  border: 2.5px solid rgba(255,255,255,.3); flex-shrink: 0; z-index: 1;
+  background: var(--navy-light); display:flex; align-items:center; justify-content:center;
 }
-.h-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.h-av img { width:100%; height:100%; object-fit:cover; display:block; }
+.h-av-fallback { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:600; color:var(--white); }
 
-.h-info { flex: 1; z-index: 1; }
-.h-name { font-family: 'Cormorant Garamond', serif; color: var(--white); font-size: 17px; font-weight: 600; line-height: 1.2; letter-spacing: 0.02em; }
-.h-sub  { color: rgba(255,255,255,0.6); font-size: 10.5px; font-weight: 300; letter-spacing: 0.04em; text-transform: uppercase; margin-top: 1px; }
-.h-online { display: flex; align-items: center; gap: 4px; margin-top: 3px; }
-.h-online::before { content:''; width:6px; height:6px; background:#4ade80; border-radius:50%; animation: pulse-dot 2.5s infinite; }
-.h-online span { font-size: 10px; color: rgba(255,255,255,0.52); }
-@keyframes pulse-dot { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.5);opacity:.5} }
+.h-info { flex:1; z-index:1; }
+.h-name { font-family:'Cormorant Garamond',serif; color:var(--white); font-size:16px; font-weight:600; line-height:1.2; letter-spacing:.02em; }
+.h-sub  { color:rgba(255,255,255,.58); font-size:10px; font-weight:300; letter-spacing:.04em; text-transform:uppercase; margin-top:1px; }
+.h-online { display:flex; align-items:center; gap:4px; margin-top:3px; }
+.h-online::before { content:''; width:6px; height:6px; background:#4ade80; border-radius:50%; animation:pulse-dot 2.5s infinite; }
+.h-online span { font-size:10px; color:rgba(255,255,255,.52); }
 
-.h-btns { display: flex; gap: 5px; z-index: 1; }
+.h-btns { display:flex; gap:5px; z-index:1; }
 .h-btn {
-  width: 28px; height: 28px; border-radius: 50%; border: none; cursor: pointer;
-  background: rgba(255,255,255,0.12); color: var(--white);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px; transition: background var(--ease);
+  width:27px; height:27px; border-radius:50%; border:none; cursor:pointer;
+  background:rgba(255,255,255,.12); color:var(--white);
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; transition:background var(--ease); flex-shrink:0;
 }
-.h-btn:hover { background: rgba(255,255,255,0.22); }
+.h-btn:hover { background:rgba(255,255,255,.24); }
 
-/* ── Messages ────────────────────────────────────────────────────────────── */
+/* ── Tab switcher ─────────────────────────────────────────────────────── */
+.view-switcher { display:flex; border-bottom:1px solid var(--border); flex-shrink:0; }
+.view-tab {
+  flex:1; padding:9px; text-align:center; font-size:11.5px; font-weight:500;
+  color:var(--muted); border:none; background:var(--white); cursor:pointer;
+  border-bottom:2px solid transparent; transition:all var(--ease);
+}
+.view-tab.active { color:var(--navy-mid); border-bottom-color:var(--navy-mid); }
+.view-tab:hover:not(.active) { background:var(--off); }
+
+/* ── Views ────────────────────────────────────────────────────────────── */
+.view { display:none; flex-direction:column; flex:1; overflow:hidden; }
+.view.active { display:flex; }
+
+/* ── Messages ─────────────────────────────────────────────────────────── */
 #messages {
-  flex: 1; overflow-y: auto; padding: 14px; display: flex;
-  flex-direction: column; gap: 10px; background: var(--off);
-  scroll-behavior: smooth;
+  flex:1; overflow-y:auto; padding:13px; display:flex;
+  flex-direction:column; gap:9px; background:var(--off); scroll-behavior:smooth;
 }
-#messages::-webkit-scrollbar { width: 3px; }
-#messages::-webkit-scrollbar-thumb { background: #c8d5e0; border-radius: 2px; }
+#messages::-webkit-scrollbar { width:3px; }
+#messages::-webkit-scrollbar-thumb { background:#c8d5e0; border-radius:2px; }
 
-.msg-row { display: flex; align-items: flex-end; gap: 8px; animation: msg-pop 0.22s ease; }
+.msg-row { display:flex; align-items:flex-end; gap:7px; animation:msg-pop .22s ease; }
 @keyframes msg-pop { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-.msg-row.user { flex-direction: row-reverse; }
+.msg-row.user { flex-direction:row-reverse; }
 
 .msg-av {
-  width: 26px; height: 26px; border-radius: 50%; overflow: hidden;
-  flex-shrink: 0; border: 1px solid rgba(13,48,85,0.12);
+  width:24px; height:24px; border-radius:50%; overflow:hidden; flex-shrink:0;
+  border:1px solid var(--border); background:var(--navy-light);
+  display:flex; align-items:center; justify-content:center;
 }
-.msg-av img { width: 100%; height: 100%; object-fit: cover; }
-.msg-av.user-av { background: var(--teal); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--white); }
+.msg-av img { width:100%; height:100%; object-fit:cover; display:block; }
+.msg-av.user-av { background:var(--teal); font-size:11px; font-weight:600; color:var(--white); }
 
 .msg-bubble {
-  max-width: 79%; padding: 10px 13px; border-radius: 16px;
-  font-size: 13.5px; line-height: 1.62; word-break: break-word;
+  max-width:79%; padding:9px 12px; border-radius:15px;
+  font-size:13px; line-height:1.62; word-break:break-word;
 }
-.msg-row.bot  .msg-bubble { background: var(--white); border: 1px solid var(--border); border-bottom-left-radius: 4px; color: var(--text); box-shadow: var(--shadow-sm); }
-.msg-row.user .msg-bubble { background: linear-gradient(135deg, var(--navy-mid), var(--navy-light)); border-bottom-right-radius: 4px; color: var(--white); }
+.msg-row.bot  .msg-bubble { background:var(--white); border:1px solid var(--border); border-bottom-left-radius:4px; color:var(--text); box-shadow:var(--shadow-sm); }
+.msg-row.user .msg-bubble { background:linear-gradient(135deg,var(--navy-mid),var(--navy-light)); border-bottom-right-radius:4px; color:var(--white); }
+.msg-bubble a { color:var(--teal); text-decoration:underline; }
+.msg-row.user .msg-bubble a { color:#a8e6ff; }
 
-.msg-bubble a { color: var(--teal); text-decoration: underline; }
-.msg-row.user .msg-bubble a { color: #a8e6ff; }
-
-.msg-time { font-size: 10px; color: var(--light-txt); margin-top: 3px; }
-.msg-row.user .msg-time { text-align: right; }
+.msg-time { font-size:10px; color:var(--light-txt); margin-top:2px; }
+.msg-row.user .msg-time { text-align:right; }
 
 /* typing */
-.typing-dots { display: flex; gap: 4px; align-items: center; padding: 2px 0; }
-.typing-dots span { width: 6px; height: 6px; background: var(--light-txt); border-radius: 50%; animation: bounce 1.3s infinite ease-in-out; }
+.typing-dots { display:flex; gap:4px; align-items:center; padding:2px 0; }
+.typing-dots span { width:5px; height:5px; background:var(--light-txt); border-radius:50%; animation:bounce 1.3s infinite ease-in-out; }
 .typing-dots span:nth-child(2){animation-delay:.18s}
 .typing-dots span:nth-child(3){animation-delay:.36s}
-@keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
 
 /* chips */
-.chip-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 10px; flex-shrink: 0; }
+.chip-row { display:flex; flex-wrap:wrap; gap:5px; padding:0 13px 9px; flex-shrink:0; }
 .chip {
-  padding: 5px 12px; border: 1px solid var(--navy-mid); border-radius: 20px;
-  font-size: 12px; color: var(--navy-mid); background: transparent;
-  cursor: pointer; font-family: 'DM Sans', sans-serif;
-  transition: all var(--ease); white-space: nowrap;
+  padding:5px 11px; border:1px solid var(--navy-mid); border-radius:20px;
+  font-size:11.5px; color:var(--navy-mid); background:transparent;
+  cursor:pointer; font-family:'DM Sans',sans-serif;
+  transition:all var(--ease); white-space:nowrap;
 }
-.chip:hover { background: var(--navy-mid); color: var(--white); }
+.chip:hover { background:var(--navy-mid); color:var(--white); }
 
-/* input row */
+/* input */
 .input-row {
-  display: flex; gap: 8px; align-items: center;
-  padding: 11px 13px; border-top: 1px solid var(--border); flex-shrink: 0; background: var(--white);
+  display:flex; gap:7px; align-items:center;
+  padding:10px 12px; border-top:1px solid var(--border); flex-shrink:0; background:var(--white);
 }
 #chat-input {
-  flex: 1; border: 1px solid var(--border); border-radius: 22px;
-  padding: 9px 15px; font-size: 13px; font-family: 'DM Sans', sans-serif;
-  background: var(--off); color: var(--text); outline: none; transition: border-color var(--ease);
+  flex:1; border:1px solid var(--border); border-radius:20px;
+  padding:8px 14px; font-size:12.5px; font-family:'DM Sans',sans-serif;
+  background:var(--off); color:var(--text); outline:none; transition:border-color var(--ease);
 }
-#chat-input:focus { border-color: var(--navy-mid); background: var(--white); }
-#chat-input::placeholder { color: var(--light-txt); }
+#chat-input:focus { border-color:var(--navy-mid); background:var(--white); }
+#chat-input::placeholder { color:var(--light-txt); }
 .send-btn {
-  width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
-  background: linear-gradient(135deg, var(--navy-mid), var(--navy-light));
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; transition: transform var(--ease), opacity var(--ease);
+  width:33px; height:33px; border-radius:50%; border:none; cursor:pointer;
+  background:linear-gradient(135deg,var(--navy-mid),var(--navy-light));
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; transition:transform var(--ease),opacity var(--ease);
 }
-.send-btn:hover { transform: scale(1.08); }
-.send-btn:disabled { opacity: 0.45; cursor: default; transform: none; }
-.send-btn svg { width: 15px; height: 15px; fill: var(--white); }
+.send-btn:hover { transform:scale(1.08); }
+.send-btn:disabled { opacity:.45; cursor:default; transform:none; }
+.send-btn svg { width:14px; height:14px; fill:var(--white); }
 
-/* identity prompt styling */
-.identity-hint {
-  background: linear-gradient(135deg, rgba(13,48,85,0.06), rgba(26,90,138,0.06));
-  border: 1px solid rgba(13,48,85,0.12); border-radius: var(--r-sm);
-  padding: 10px 13px; margin: 0 14px 10px; font-size: 12px; color: var(--muted);
-  text-align: center; flex-shrink: 0;
+/* menu view */
+#menu-view { background:var(--off); padding:13px; overflow-y:auto; gap:9px; }
+.menu-welcome {
+  background:linear-gradient(135deg,var(--navy),var(--navy-mid));
+  border-radius:var(--r-sm); padding:13px; color:var(--white); margin-bottom:4px;
 }
-.identity-hint strong { color: var(--navy-mid); }
+.menu-welcome strong { display:block; font-family:'Cormorant Garamond',serif; font-size:15px; font-weight:600; margin-bottom:3px; }
+.menu-welcome p { font-size:12px; opacity:.8; line-height:1.5; }
+.menu-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.menu-card {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:var(--r-sm); padding:12px 10px; cursor:pointer;
+  transition:all var(--ease); display:flex; flex-direction:column; gap:5px;
+}
+.menu-card:hover { border-color:var(--navy-mid); box-shadow:var(--shadow-sm); transform:translateY(-1px); }
+.menu-icon { font-size:20px; }
+.menu-label { font-size:12px; font-weight:500; color:var(--text); line-height:1.3; }
+.menu-desc  { font-size:10.5px; color:var(--muted); line-height:1.4; }
+
+/* action modal */
+#action-modal {
+  position:absolute; inset:0; background:rgba(13,48,85,.55);
+  display:none; align-items:flex-end; z-index:10; animation:fade-in .18s ease;
+}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
+#action-modal.show { display:flex; }
+.modal-sheet {
+  background:var(--white); width:100%; border-radius:var(--r) var(--r) 0 0;
+  padding:18px; animation:slide-up .25s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes slide-up{from{transform:translateY(60px)}to{transform:translateY(0)}}
+.modal-title { font-family:'Cormorant Garamond',serif; font-size:17px; font-weight:600; color:var(--navy); margin-bottom:12px; }
+.modal-field { margin-bottom:11px; }
+.modal-field label { display:block; font-size:11.5px; color:var(--muted); margin-bottom:4px; }
+.modal-field input,.modal-field select,.modal-field textarea {
+  width:100%; padding:8px 11px; border:1px solid var(--border); border-radius:6px;
+  font-size:12.5px; font-family:'DM Sans',sans-serif; color:var(--text);
+  background:var(--off); outline:none; transition:border-color var(--ease);
+}
+.modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus { border-color:var(--navy-mid); }
+.modal-field textarea { min-height:65px; resize:vertical; }
+.modal-actions { display:flex; gap:7px; margin-top:4px; }
+.btn-primary {
+  flex:1; padding:9px; border:none; border-radius:6px;
+  background:linear-gradient(135deg,var(--navy-mid),var(--navy-light));
+  color:var(--white); font-size:13px; font-weight:500; cursor:pointer;
+  font-family:'DM Sans',sans-serif; transition:opacity var(--ease);
+}
+.btn-primary:hover { opacity:.9; }
+.btn-secondary {
+  padding:9px 14px; border:1px solid var(--border); border-radius:6px;
+  background:transparent; color:var(--muted); font-size:13px; cursor:pointer;
+  font-family:'DM Sans',sans-serif; transition:all var(--ease);
+}
+.btn-secondary:hover { background:var(--off); }
+
+/* toast */
+#result-toast {
+  position:absolute; top:66px; left:10px; right:10px;
+  background:var(--navy); color:var(--white); border-radius:var(--r-sm);
+  padding:11px 14px; font-size:12px; line-height:1.5; z-index:11;
+  display:none; animation:slide-down .22s ease;
+}
+@keyframes slide-down{from{transform:translateY(-10px);opacity:0}to{transform:translateY(0);opacity:1}}
+#result-toast.show { display:block; }
+#result-toast.success { background:#0d6e5b; }
+#result-toast.error   { background:#9b2c2c; }
+.toast-close { float:right; background:none; border:none; color:rgba(255,255,255,.7); font-size:15px; cursor:pointer; margin-left:7px; line-height:1; }
 </style>
 </head>
 <body>
 
-<!-- ── Launcher ────────────────────────────────────────────────────────────── -->
-<button id="Shanaya-launcher" onclick="toggleWidget()" aria-label="Chat with Shanaya">
-  <div class="lnch-avatar">
-    <!-- Replace src with your actual profile picture URL or base64 -->
+<!-- ── Launcher ─────────────────────────────────────────────────────────── -->
+<button id="Shanaya-launcher" onclick="openPanel()" aria-label="Chat with Shanaya">
+  <div class="lnch-av">
     <img src="https://arya-v1-0-0.onrender.com/static/Shanaya-avatar.jpg"
-         onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\'font-family:Cormorant Garamond,serif;font-size:18px;font-weight:600;color:#fff;display:flex;align-items:center;justify-content:center;height:100%\'>S</span>'"
+         onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\'font-family:Cormorant Garamond,serif;font-size:17px;font-weight:600;color:#fff\'>S</span><div class=\'lnch-pulse\'></div>'"
          alt="Shanaya">
     <div class="lnch-pulse"></div>
   </div>
@@ -209,14 +286,13 @@ body { background: transparent; font-family: 'DM Sans', sans-serif; overflow: hi
   </div>
 </button>
 
-<!-- ── Widget panel ────────────────────────────────────────────────────────── -->
+<!-- ── Widget ───────────────────────────────────────────────────────────── -->
 <div id="Shanaya-widget" role="dialog" aria-label="Shanaya Travel Chatbot">
 
-  <!-- Header -->
   <div class="s-header">
-    <div class="h-avatar">
+    <div class="h-av">
       <img src="https://arya-v1-0-0.onrender.com/static/Shanaya-avatar.jpg"
-           onerror="this.style.display='none'"
+           onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\'h-av-fallback\'>S</span>'"
            alt="Shanaya">
     </div>
     <div class="h-info">
@@ -225,62 +301,106 @@ body { background: transparent; font-family: 'DM Sans', sans-serif; overflow: hi
       <div class="h-sub">Uniglobe MKOV Travel</div>
     </div>
     <div class="h-btns">
-      <!-- Minimise button -->
-      <button class="h-btn" onclick="minimiseWidget()" title="Minimise" aria-label="Minimise">—</button>
-      <!-- Close button -->
-      <button class="h-btn" onclick="closeWidget()" title="Close" aria-label="Close">✕</button>
+      <button class="h-btn" onclick="minimiseWidget()" title="Minimise" aria-label="Minimise">&#8722;</button>
+      <button class="h-btn" onclick="closeAndClear()" title="Close & clear chat" aria-label="Close">&#x2715;</button>
     </div>
   </div>
 
-  <!-- Messages -->
-  <div id="messages"></div>
-
-  <!-- Identity hint (shown before name+phone given) -->
-  <div class="identity-hint" id="id-hint" style="display:none">
-    Please share your <strong>Name, Phone Number</strong> to continue.
+  <div class="view-switcher">
+    <button class="view-tab active" onclick="switchView('chat')"   id="tab-chat">💬 Chat</button>
+    <button class="view-tab"        onclick="switchView('menu')"   id="tab-menu">⚡ Quick Actions</button>
   </div>
 
-  <!-- Quick chips -->
-  <div class="chip-row" id="chip-row"></div>
+  <div class="view active" id="chat-view">
+    <div id="messages"></div>
+    <div class="chip-row" id="chip-row"></div>
+    <div class="input-row">
+      <input id="chat-input" type="text" placeholder="Type here…"
+             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}">
+      <button class="send-btn" id="send-btn" onclick="sendMessage()" aria-label="Send">
+        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+      </button>
+    </div>
+  </div>
 
-  <!-- Input -->
-  <div class="input-row">
-    <input id="chat-input" type="text"
-           placeholder="Type here…"
-           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}">
-    <button class="send-btn" id="send-btn" onclick="sendMessage()" aria-label="Send">
-      <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
-    </button>
+  <div class="view" id="menu-view">
+    <div class="menu-welcome">
+      <strong>Welcome Traveller! 👋</strong>
+      <p>Choose an action below, or switch to Chat to talk to Shanaya directly.</p>
+    </div>
+    <div class="menu-grid">
+      <div class="menu-card" onclick="openAction('get_confirmation')"><div class="menu-icon">📋</div><div class="menu-label">Get Booking Confirmation</div><div class="menu-desc">View your booking details</div></div>
+      <div class="menu-card" onclick="openAction('hold_booking')"><div class="menu-icon">🔒</div><div class="menu-label">Hold a Package</div><div class="menu-desc">Reserve 24 hrs, no payment</div></div>
+      <div class="menu-card" onclick="openAction('cancel_booking')"><div class="menu-icon">❌</div><div class="menu-label">Cancel Booking</div><div class="menu-desc">Cancel and check refund</div></div>
+      <div class="menu-card" onclick="openAction('add_ancillary')"><div class="menu-icon">✨</div><div class="menu-label">Add Extras</div><div class="menu-desc">Insurance, visas, upgrades</div></div>
+      <div class="menu-card" onclick="openAction('payment_link')"><div class="menu-icon">💳</div><div class="menu-label">Get Payment Link</div><div class="menu-desc">Complete your booking</div></div>
+      <div class="menu-card" onclick="openAction('custom_request')"><div class="menu-icon">💬</div><div class="menu-label">Custom Request</div><div class="menu-desc">Talk to a specialist</div></div>
+    </div>
+  </div>
+
+  <div id="action-modal" onclick="if(event.target===this)closeModal()">
+    <div class="modal-sheet" id="modal-content"></div>
+  </div>
+  <div id="result-toast">
+    <button class="toast-close" onclick="closeToast()">✕</button>
+    <div id="toast-text"></div>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════════════════
-// CONFIG — UPDATE THIS URL TO YOUR RENDER BACKEND
-// ══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════════
 const API_BASE = 'https://arya-v1-0-0.onrender.com';
+const AVATAR   = API_BASE + '/static/Shanaya-avatar.jpg';
 
-// ── State ─────────────────────────────────────────────────────────
-let sessionId    = 'web-' + Math.random().toString(36).substr(2,10);
+// ═══════════════════════════════════════════════════════════════════
+// SESSION PERSISTENCE
+// sessionId stored in sessionStorage → survives page navigation
+// within the same browser tab but cleared on tab close.
+// chatOpen stored so widget remembers if it was open.
+// ═══════════════════════════════════════════════════════════════════
+let sessionId    = sessionStorage.getItem('mkov_sid') || ('web-' + Math.random().toString(36).substr(2,10));
 let isTyping     = false;
-let identityGiven = false;
-let isMinimised  = false;
+let identityGiven = sessionStorage.getItem('mkov_id_given') === '1';
+let chatHistory  = JSON.parse(sessionStorage.getItem('mkov_history') || '[]');
+let wasOpen      = sessionStorage.getItem('mkov_open') === '1';
 
-// ── Init on load ──────────────────────────────────────────────────
+sessionStorage.setItem('mkov_sid', sessionId);
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
 window.addEventListener('load', () => {
-  // If inside WP iframe: auto-open panel, hide launcher
+  // If inside WP iframe hide internal launcher
   if (window.parent !== window) {
     document.getElementById('Shanaya-launcher').style.display = 'none';
+  }
+
+  // Restore chat history from sessionStorage
+  if (chatHistory.length > 0) {
+    chatHistory.forEach(m => {
+      if (m.role === 'bot') restoreBot(m.text);
+      else                  restoreUser(m.text);
+    });
+    if (identityGiven) {
+      document.getElementById('chat-input').placeholder = 'Ask about destinations, packages, visas…';
+    }
+  } else {
+    setTimeout(showWelcome, 400);
+  }
+
+  // Restore open state — if widget was open before navigation, reopen it
+  if (wasOpen || window.parent !== window) {
     openPanel();
   }
-  setTimeout(showWelcome, 400);
 });
 
-// ── postMessage from WordPress parent page ────────────────────────
+// postMessage from WP parent
 window.addEventListener('message', function(e) {
   if (!e.data) return;
-  if (e.data.action === 'open_Shanaya')   { openPanel(); }
-  if (e.data.action === 'close_Shanaya')  { closeWidget(); }
+  if (e.data.action === 'open_shanaya') openPanel();
+  if (e.data.action === 'close_shanaya') minimiseWidget();
 });
 
 function showWelcome() {
@@ -290,48 +410,71 @@ function showWelcome() {
     'Please reply in this format:\n**Name, Phone_Number**\n\n' +
     'Example: Rahul Sharma, 9876543210'
   );
-  document.getElementById('id-hint').style.display = 'block';
   document.getElementById('chat-input').placeholder = 'Name, Phone_Number';
 }
 
-// ══════════════════════════════════════════════════════════════════
-// WIDGET OPEN / CLOSE / MINIMISE
-// ══════════════════════════════════════════════════════════════════
-function toggleWidget() {
-  const w = document.getElementById('Shanaya-widget');
-  if (w.classList.contains('open')) {
-    closeWidget();
-  } else {
-    openPanel();
-  }
-}
-
+// ═══════════════════════════════════════════════════════════════════
+// OPEN / MINIMISE / CLOSE
+// ═══════════════════════════════════════════════════════════════════
 function openPanel() {
-  isMinimised = false;
-  const w = document.getElementById('Shanaya-widget');
-  w.classList.add('open');
+  document.getElementById('Shanaya-widget').classList.add('open');
   document.getElementById('Shanaya-launcher').style.display = 'none';
+  sessionStorage.setItem('mkov_open', '1');
   setTimeout(() => document.getElementById('chat-input').focus(), 300);
+  // Tell WP parent to expand iframe
+  if (window.parent !== window) {
+    window.parent.postMessage({ action: 'expand_shanaya' }, '*');
+  }
 }
 
 function minimiseWidget() {
-  // Collapse widget but keep launcher visible so user can reopen
-  isMinimised = true;
+  // Hides panel, shows launcher — KEEPS chat history intact
   document.getElementById('Shanaya-widget').classList.remove('open');
   document.getElementById('Shanaya-launcher').style.display = 'flex';
-  // Tell parent WP page to shrink iframe back to 0×0
+  sessionStorage.setItem('mkov_open', '0');
   if (window.parent !== window) {
-    window.parent.postMessage({ action: 'close_Shanaya' }, '*');
+    window.parent.postMessage({ action: 'close_shanaya' }, '*');
   }
 }
 
-function closeWidget() {
-  minimiseWidget(); // same behaviour — collapse + show launcher
+function closeAndClear() {
+  // ✕ button — minimise AND wipe chat history + session
+  minimiseWidget();
+  // Clear everything
+  sessionStorage.removeItem('mkov_sid');
+  sessionStorage.removeItem('mkov_id_given');
+  sessionStorage.removeItem('mkov_history');
+  sessionStorage.removeItem('mkov_open');
+  sessionId     = 'web-' + Math.random().toString(36).substr(2,10);
+  identityGiven = false;
+  chatHistory   = [];
+  sessionStorage.setItem('mkov_sid', sessionId);
+  document.getElementById('messages').innerHTML = '';
+  document.getElementById('chip-row').innerHTML = '';
+  document.getElementById('chat-input').placeholder = 'Type here…';
+  // Fresh welcome next time
+  setTimeout(showWelcome, 300);
 }
 
-// ══════════════════════════════════════════════════════════════════
+function toggleWidget() {
+  const w = document.getElementById('Shanaya-widget');
+  if (w.classList.contains('open')) minimiseWidget();
+  else openPanel();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VIEW SWITCHING
+// ═══════════════════════════════════════════════════════════════════
+function switchView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.view-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById(v + '-view').classList.add('active');
+  document.getElementById('tab-' + v).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // CHAT
-// ══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 async function sendMessage() {
   const input = document.getElementById('chat-input');
   const text  = input.value.trim();
@@ -342,40 +485,29 @@ async function sendMessage() {
   showTyping();
 
   try {
-    const res = await fetch(`${API_BASE}/widget/chat`, {
+    const res = await fetch(API_BASE + '/widget/chat', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ message: text, session_id: sessionId }),
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-
     hideTyping();
     appendBot(data.reply);
-
-    if (data.session_id) sessionId = data.session_id;
-
-    // Update identity state
+    if (data.session_id) { sessionId = data.session_id; sessionStorage.setItem('mkov_sid', sessionId); }
     if (data.identity_given) {
       identityGiven = true;
-      document.getElementById('id-hint').style.display = 'none';
+      sessionStorage.setItem('mkov_id_given', '1');
       document.getElementById('chat-input').placeholder = 'Ask about destinations, packages, visas…';
     }
-
-    // Chips from suggested actions
     if (data.suggested_actions && data.suggested_actions.length) {
       setChips(data.suggested_actions.slice(0,3).map(a => a.label));
     } else if (identityGiven) {
-      setChips(['Goa packages 🌊', 'Dubai trip ✈️', 'Honeymoon packages 💑', 'Talk to agent 📞']);
+      setChips(['All trips 🌍', 'Honeymoon 💑', 'Visa help 🛂', 'Talk to agent 📞']);
     }
-
   } catch(err) {
     hideTyping();
-    console.error('Shanaya error:', err);
-    appendBot(
-      'I\'m having a brief connection issue. 🙏 ' +
-      'Please try again, or call us at **+91-9999-XXXXXX**.'
-    );
+    appendBot('I\'m having a brief connection issue. 🙏\nPlease try again or call **+91 8010700700**.');
   }
 }
 
@@ -384,28 +516,38 @@ function sendChip(label) {
   sendMessage();
 }
 
-// ══════════════════════════════════════════════════════════════════
-// MESSAGE RENDERING
-// ══════════════════════════════════════════════════════════════════
-const AVATAR_URL = 'https://arya-v1-0-0.onrender.com/static/Shanaya-avatar.jpg';
+// ═══════════════════════════════════════════════════════════════════
+// MESSAGE RENDERING + SESSION STORAGE
+// ═══════════════════════════════════════════════════════════════════
+function saveToHistory(role, text) {
+  chatHistory.push({ role, text });
+  // Keep last 40 messages to avoid huge storage
+  if (chatHistory.length > 40) chatHistory = chatHistory.slice(-40);
+  sessionStorage.setItem('mkov_history', JSON.stringify(chatHistory));
+}
+
+function makeBotRow(html) {
+  const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  const row = document.createElement('div');
+  row.className = 'msg-row bot';
+  row.innerHTML =
+    '<div class="msg-av"><img src="' + AVATAR + '" onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'<span style=\\\'font-family:serif;font-size:11px;font-weight:600;color:#fff\\\'>S</span>\'" alt="S"></div>' +
+    '<div><div class="msg-bubble">' + html + '</div><div class="msg-time">' + now + '</div></div>';
+  return row;
+}
 
 function appendBot(text) {
   isTyping = false;
   document.getElementById('send-btn').disabled = false;
   const msgs = document.getElementById('messages');
-  const now  = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-  const row  = document.createElement('div');
-  row.className = 'msg-row bot';
-  row.innerHTML = `
-    <div class="msg-av">
-      <img src="${AVATAR_URL}" onerror="this.parentElement.innerHTML='<span style=\\'font-family:serif;font-size:12px;font-weight:600;color:#fff;display:flex;align-items:center;justify-content:center;height:100%;background:#1a5a8a;border-radius:50%\\'>S</span>'" alt="S">
-    </div>
-    <div>
-      <div class="msg-bubble">${fmt(text)}</div>
-      <div class="msg-time">${now}</div>
-    </div>`;
-  msgs.appendChild(row);
+  msgs.appendChild(makeBotRow(fmt(text)));
   msgs.scrollTop = msgs.scrollHeight;
+  saveToHistory('bot', text);
+}
+
+function restoreBot(text) {
+  const msgs = document.getElementById('messages');
+  msgs.appendChild(makeBotRow(fmt(text)));
 }
 
 function appendUser(text) {
@@ -413,14 +555,22 @@ function appendUser(text) {
   const now  = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
   const row  = document.createElement('div');
   row.className = 'msg-row user';
-  row.innerHTML = `
-    <div>
-      <div class="msg-bubble">${esc(text)}</div>
-      <div class="msg-time">${now}</div>
-    </div>
-    <div class="msg-av user-av">U</div>`;
+  row.innerHTML =
+    '<div><div class="msg-bubble">' + esc(text) + '</div><div class="msg-time">' + now + '</div></div>' +
+    '<div class="msg-av user-av">U</div>';
   msgs.appendChild(row);
   msgs.scrollTop = msgs.scrollHeight;
+  saveToHistory('user', text);
+}
+
+function restoreUser(text) {
+  const msgs = document.getElementById('messages');
+  const row  = document.createElement('div');
+  row.className = 'msg-row user';
+  row.innerHTML =
+    '<div><div class="msg-bubble">' + esc(text) + '</div></div>' +
+    '<div class="msg-av user-av">U</div>';
+  msgs.appendChild(row);
 }
 
 function showTyping() {
@@ -429,11 +579,9 @@ function showTyping() {
   const msgs = document.getElementById('messages');
   const row  = document.createElement('div');
   row.className = 'msg-row bot'; row.id = 'typing-row';
-  row.innerHTML = `
-    <div class="msg-av">
-      <img src="${AVATAR_URL}" onerror="this.parentElement.innerHTML='<span style=\\'font-size:12px;font-weight:600;color:#fff;display:flex;align-items:center;justify-content:center;height:100%;background:#1a5a8a;border-radius:50%\\'>S</span>'" alt="S">
-    </div>
-    <div><div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div></div>`;
+  row.innerHTML =
+    '<div class="msg-av"><img src="' + AVATAR + '" onerror="this.style.display=\'none\'" alt="S"></div>' +
+    '<div><div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div></div>';
   msgs.appendChild(row);
   msgs.scrollTop = msgs.scrollHeight;
 }
@@ -453,28 +601,76 @@ function setChips(labels) {
     row.appendChild(b);
   });
 }
+function clearChips() { document.getElementById('chip-row').innerHTML = ''; }
 
-function clearChips() {
-  document.getElementById('chip-row').innerHTML = '';
+// ═══════════════════════════════════════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════════════════════════════════════
+const ACTION_FORMS = {
+  get_confirmation: { title:'📋 Get Booking Confirmation', fields:[{name:'booking_id',label:'Booking Reference (optional)',type:'text',placeholder:'Leave blank to auto-detect'}] },
+  hold_booking:     { title:'🔒 Hold a Package (24 hrs)', fields:[{name:'destination',label:'Destination',type:'text',placeholder:'e.g. Bali, Dubai, Thailand'},{name:'travel_dates',label:'Travel Dates',type:'text',placeholder:'e.g. July 15–25'},{name:'duration_hours',label:'Hold Duration',type:'select',options:[['24','24 hours'],['48','48 hours'],['72','72 hours']]}] },
+  cancel_booking:   { title:'❌ Cancel Booking', fields:[{name:'booking_id',label:'Booking Reference',type:'text',placeholder:'e.g. BK-001'},{name:'reason',label:'Reason (optional)',type:'text',placeholder:'e.g. Change of plans'}] },
+  add_ancillary:    { title:'✨ Add Extras', fields:[{name:'booking_id',label:'Booking Reference',type:'text',placeholder:'e.g. BK-001'},{name:'type',label:'Type',type:'select',options:[['travel_insurance','Travel Insurance — ₹2,500'],['visa_assistance','Visa Assistance — ₹1,500'],['hotel_upgrade','Hotel Upgrade — ₹5,000'],['airport_transfer','Airport Transfer — ₹1,200'],['activity_package','Activity Package — ₹3,500'],['meal_plan','Meal Plan — ₹2,000'],['travel_sim','International SIM — ₹800'],['forex_card','Forex Card — ₹500']]}] },
+  payment_link:     { title:'💳 Generate Payment Link', fields:[{name:'booking_id',label:'Booking Reference',type:'text',placeholder:'e.g. BK-001'}] },
+  custom_request:   { title:'💬 Custom Request', fields:[{name:'request_text',label:'Describe your request',type:'textarea',placeholder:'e.g. Group of 15, need a Europe itinerary…'}] },
+};
+
+function openAction(key) {
+  const form = ACTION_FORMS[key]; if (!form) return;
+  document.getElementById('modal-content').innerHTML =
+    '<div class="modal-title">' + form.title + '</div>' +
+    form.fields.map(f => {
+      if (f.type === 'select') return '<div class="modal-field"><label>' + f.label + '</label><select name="' + f.name + '">' + f.options.map(([v,l]) => '<option value="' + v + '">' + l + '</option>').join('') + '</select></div>';
+      if (f.type === 'textarea') return '<div class="modal-field"><label>' + f.label + '</label><textarea name="' + f.name + '" placeholder="' + (f.placeholder||'') + '"></textarea></div>';
+      return '<div class="modal-field"><label>' + f.label + '</label><input type="text" name="' + f.name + '" placeholder="' + (f.placeholder||'') + '"></div>';
+    }).join('') +
+    '<div class="modal-actions"><button class="btn-secondary" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="submitAction(\'' + key + '\')">Submit</button></div>';
+  document.getElementById('action-modal').classList.add('show');
 }
 
-// ══════════════════════════════════════════════════════════════════
+async function submitAction(key) {
+  const modal = document.getElementById('modal-content');
+  const details = {};
+  modal.querySelectorAll('input,select,textarea').forEach(inp => {
+    if (inp.value.trim()) details[inp.name] = inp.name==='duration_hours' ? parseInt(inp.value) : inp.value.trim();
+  });
+  closeModal();
+  showResultToast('⏳ Processing…','');
+  try {
+    const body = { action:key, session_id:sessionId, details };
+    if (details.booking_id) { body.booking_id = details.booking_id; delete details.booking_id; }
+    const r = await fetch(API_BASE + '/widget/action', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
+    });
+    const data = await r.json();
+    showResultToast(data.message||'Done.', data.status==='success'?'success':'error');
+    appendBot(data.message||'Action completed.');
+    switchView('chat');
+  } catch { showResultToast('Server error. Please try again.','error'); }
+}
+
+function closeModal() { document.getElementById('action-modal').classList.remove('show'); }
+
+function showResultToast(msg, type) {
+  const t = document.getElementById('result-toast');
+  document.getElementById('toast-text').innerHTML = esc(msg).replace(/\n/g,'<br>');
+  t.className = 'show ' + (type||'');
+  if (type) setTimeout(closeToast, 5500);
+}
+function closeToast() { document.getElementById('result-toast').classList.remove('show'); }
+
+// ═══════════════════════════════════════════════════════════════════
 // UTILS
-// ══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 function esc(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
 function fmt(text) {
   return esc(text)
-    .replace(/\n/g, '<br>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    // Convert markdown links [text](url) to real links
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener">$1</a>')
-    // Auto-link bare URLs
-    .replace(/(^|[\s<br>])(https?:\/\/[^\s<]+)/g,
-      '$1<a href="$2" target="_blank" rel="noopener">$2</a>');
+    .replace(/\n/g,'<br>')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/(^|<br>|[\s])(https?:\/\/[^\s<"]+)/g,'$1<a href="$2" target="_blank" rel="noopener">$2</a>');
 }
 </script>
 </body>
