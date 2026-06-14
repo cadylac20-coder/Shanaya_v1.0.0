@@ -14,7 +14,6 @@ def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
-    # ── Conversations ─────────────────────────────────────────────────────────
     c.execute("""
         CREATE TABLE IF NOT EXISTS conversations (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,7 +24,6 @@ def init_db():
         )
     """)
 
-    # ── API Keys ──────────────────────────────────────────────────────────────
     c.execute("""
         CREATE TABLE IF NOT EXISTS api_keys (
             id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,26 +34,34 @@ def init_db():
         )
     """)
 
-    # ── Leads — stores name + phone captured at start of conversation ─────────
-    # This is the master list accessible from Render logs / admin
+    # ── Leads — one row per UNIQUE PERSON (by phone number) ──────────────────
+    # visit_count tracks how many separate sessions this person has had
     c.execute("""
         CREATE TABLE IF NOT EXISTS leads (
-            id            INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_id    TEXT UNIQUE NOT NULL,
-            contact_name  TEXT,
-            contact_phone TEXT,
-            destination   TEXT,
-            travel_dates  TEXT,
-            group_size    INTEGER,
-            trip_type     TEXT,
-            is_complete   INTEGER DEFAULT 0,
-            identity_given INTEGER DEFAULT 0,  -- 1 once name+phone collected
-            created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            contact_name    TEXT,
+            contact_phone   TEXT UNIQUE,      -- unique per person, not per session
+            destination     TEXT,
+            travel_dates    TEXT,
+            group_size      INTEGER,
+            trip_type       TEXT,
+            identity_given  INTEGER DEFAULT 0,
+            visit_count     INTEGER DEFAULT 1, -- increments each new session
+            first_seen      DATETIME DEFAULT CURRENT_TIMESTAMP,
+            last_seen       DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
-    # ── Bookings ──────────────────────────────────────────────────────────────
+    # ── Sessions — maps session_id to a lead ─────────────────────────────────
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS sessions (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id  TEXT UNIQUE NOT NULL,
+            lead_id     INTEGER REFERENCES leads(id),
+            created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
     c.execute("""
         CREATE TABLE IF NOT EXISTS bookings (
             id             INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,7 +79,6 @@ def init_db():
         )
     """)
 
-    # ── Holds ─────────────────────────────────────────────────────────────────
     c.execute("""
         CREATE TABLE IF NOT EXISTS holds (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -87,7 +92,6 @@ def init_db():
         )
     """)
 
-    # ── Ancillaries ───────────────────────────────────────────────────────────
     c.execute("""
         CREATE TABLE IF NOT EXISTS ancillaries (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -100,7 +104,6 @@ def init_db():
         )
     """)
 
-    # ── Support tickets ───────────────────────────────────────────────────────
     c.execute("""
         CREATE TABLE IF NOT EXISTS support_tickets (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -112,7 +115,6 @@ def init_db():
         )
     """)
 
-    # ── Seed default API key ──────────────────────────────────────────────────
     from config import DEFAULT_API_KEY
     c.execute(
         "INSERT OR IGNORE INTO api_keys (key, name) VALUES (?, ?)",
