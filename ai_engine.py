@@ -95,14 +95,30 @@ def create_or_update_lead(session_id: str, name: str, phone: str) -> dict:
 
 
 def try_parse_identity(text: str):
-    """Parse 'Name, Phone_Number' from message. Returns (name, phone) or (None, None)."""
-    pattern = r'^([A-Za-z][A-Za-z\s\.]{1,48}),\s*(\+?[\d\s\-]{8,15})$'
-    m = re.match(pattern, text.strip())
+    """
+    Parse 'Name, Phone_Number' from message. 
+    Robustly handles spaces around commas and space-only separations.
+    """
+    cleaned = text.strip()
+    
+    # Pattern 1: Matches Name and Phone separated by a comma (with any amount of spaces)
+    pattern_comma = r'^([A-Za-z][A-Za-z\s\.]{1,48})\s*,\s*(\+?[\d\s\-]{8,15})$'
+    m = re.match(pattern_comma, cleaned)
     if m:
         name  = m.group(1).strip()
         phone = re.sub(r'[\s\-]', '', m.group(2).strip())
         if len(phone) >= 8:
             return name, phone
+
+    # Pattern 2: Fallback if they forgot the comma entirely (separated by spaces only)
+    pattern_space = r'^([A-Za-z][A-Za-z\s\.]{1,48})\s+(\+?[\d\s\-]{8,15})$'
+    m = re.match(pattern_space, cleaned)
+    if m:
+        name  = m.group(1).strip()
+        phone = re.sub(r'[\s\-]', '', m.group(2).strip())
+        if len(phone) >= 8:
+            return name, phone
+            
     return None, None
 
 
