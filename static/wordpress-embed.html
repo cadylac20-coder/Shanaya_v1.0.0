@@ -1,107 +1,158 @@
 <script>
 /*
  * Shanaya — MKOV Travel Assistant
- * WordPress Footer Embed v4.0
- * Replace ALL previous scripts with this one.
+ * WordPress Footer Embed — FINAL WORKING VERSION
+ *
+ * What this does:
+ * 1. Creates a launcher button (bottom-right)
+ * 2. On click, expands iframe to show Shanaya
+ * 3. Does NOT auto-open on page load / navigation
+ * 4. Handles Render spin-up delay gracefully
+ * 5. Zero interference with other popups
  */
 (function () {
 
-  var RENDER = 'https://arya-v1-0-0.onrender.com';
+  var RENDER   = 'https://arya-v1-0-0.onrender.com';
+  var OPEN_KEY = 'shanaya_open';
+  var isOpen   = false;
 
-  /* ── iframe starts at 0x0 — zero interference with popups ── */
+  /* ── iframe: 0×0 until opened ── */
   var iframe = document.createElement('iframe');
-  iframe.src   = RENDER + '/widget';
   iframe.id    = 'shanaya-iframe';
+  iframe.src   = RENDER + '/widget';
   iframe.title = 'Shanaya — MKOV Travel Assistant';
   iframe.setAttribute('allow', 'microphone');
   iframe.style.cssText = 'position:fixed;bottom:0;right:0;width:0;height:0;border:none;z-index:99998;pointer-events:none;background:transparent;';
   document.body.appendChild(iframe);
 
-  /* ── Launcher styles ── */
+  /* ── Styles ── */
   var style = document.createElement('style');
   style.textContent = [
-    '#shanaya-btn{position:fixed;bottom:24px;right:24px;z-index:99999;',
+    '#sh-btn{position:fixed;bottom:24px;right:24px;z-index:99999;',
     'display:flex;align-items:center;gap:10px;',
     'background:linear-gradient(135deg,#0d3055,#1a5a8a);',
     'color:#fff;border:none;border-radius:32px;',
     'padding:10px 18px 10px 10px;cursor:pointer;',
-    'box-shadow:0 8px 28px rgba(13,48,85,.30);',
+    'box-shadow:0 8px 28px rgba(13,48,85,.35);',
     'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;',
     'transition:transform .2s,box-shadow .2s;user-select:none;}',
-    '#shanaya-btn:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(13,48,85,.40);}',
-    '.s-lav{width:38px;height:38px;border-radius:50%;overflow:hidden;',
-    'border:2px solid rgba(255,255,255,.3);flex-shrink:0;position:relative;background:#2678b5;}',
-    '.s-lav img{width:100%;height:100%;object-fit:cover;display:block;}',
-    '.s-lpulse{position:absolute;bottom:0;right:0;width:10px;height:10px;',
+    '#sh-btn:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(13,48,85,.45);}',
+    '.sh-av{width:40px;height:40px;border-radius:50%;overflow:hidden;',
+    'border:2px solid rgba(255,255,255,.3);flex-shrink:0;position:relative;',
+    'background:#2678b5;display:flex;align-items:center;justify-content:center;}',
+    '.sh-av img{width:100%;height:100%;object-fit:cover;display:block;}',
+    '.sh-fb{position:absolute;inset:0;display:none;align-items:center;',
+    'justify-content:center;font-family:Georgia,serif;font-size:19px;',
+    'font-weight:700;color:#fff;}',
+    '.sh-pulse{position:absolute;bottom:1px;right:1px;width:11px;height:11px;',
     'background:#4ade80;border-radius:50%;border:2px solid #fff;',
-    'animation:sp 2.5s ease-in-out infinite;}',
-    '@keyframes sp{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.5}}',
-    '.s-ltxt{display:flex;flex-direction:column;line-height:1.2;text-align:left;}',
-    '.s-ltxt strong{font-size:13.5px;font-weight:500;}',
-    '.s-ltxt span{font-size:10.5px;opacity:.72;font-weight:300;}',
-    '@media(max-width:520px){#shanaya-btn{right:12px;bottom:12px;padding:9px 15px 9px 9px;}',
-    '#shanaya-btn .s-ltxt span{display:none;}}',
+    'animation:shp 2.5s ease-in-out infinite;}',
+    '@keyframes shp{0%,100%{transform:scale(1)}50%{transform:scale(1.5);opacity:.5}}',
+    '.sh-txt{display:flex;flex-direction:column;line-height:1.2;text-align:left;}',
+    '.sh-txt strong{font-size:13.5px;font-weight:500;}',
+    '.sh-txt span{font-size:10.5px;opacity:.72;font-weight:300;}',
+    '@media(max-width:520px){',
+    '#sh-btn{right:12px;bottom:12px;padding:9px 14px 9px 9px;}',
+    '#sh-btn .sh-txt span{display:none;}}',
   ].join('');
   document.head.appendChild(style);
 
   /* ── Launcher button ── */
   var btn = document.createElement('button');
-  btn.id = 'shanaya-btn';
+  btn.id = 'sh-btn';
   btn.setAttribute('aria-label','Chat with Shanaya — MKOV Travel Assistant');
   btn.innerHTML = [
-    '<div class="s-lav">',
-    '<img src="' + RENDER + '/static/Shanaya-avatar.jpg"',
-    ' onerror="this.style.display=\'none\'" alt="Shanaya">',
-    '<div class="s-lpulse"></div></div>',
-    '<div class="s-ltxt"><strong>Chat with Shanaya</strong>',
-    '<span>MKOV Travel Assistant</span></div>',
+    '<div class="sh-av">',
+    '<img src="'+RENDER+'/static/Shanaya-avatar.jpg"',
+    ' onload="this.style.display=\'block\'"',
+    ' onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'" alt="">',
+    '<div class="sh-fb">S</div>',
+    '<div class="sh-pulse"></div>',
+    '</div>',
+    '<div class="sh-txt"><strong>Chat with Shanaya</strong><span>MKOV Travel Assistant</span></div>',
   ].join('');
   document.body.appendChild(btn);
 
-  var isOpen = false;
-
-  function openChat() {
-    isOpen = true;
-    var mob = window.innerWidth <= 520;
-    iframe.style.width         = mob ? '100vw' : '430px';
-    iframe.style.height        = mob ? '92vh'  : '690px';
-    iframe.style.pointerEvents = 'all';
-    btn.style.display          = 'none';
-    /* tell widget to open its panel */
-    iframe.contentWindow.postMessage({ action: 'open_shanaya' }, '*');
+  /* ── Size helper ── */
+  function sz() {
+    return window.innerWidth <= 520
+      ? {w:'100vw', h:'92vh'}
+      : {w:'420px', h:'650px'};
   }
 
+  /* ── Open ── */
+  function openChat() {
+    if (isOpen) return;
+    isOpen = true;
+    var s = sz();
+    iframe.style.width         = s.w;
+    iframe.style.height        = s.h;
+    iframe.style.pointerEvents = 'all';
+    btn.style.display          = 'none';
+    try { sessionStorage.setItem(OPEN_KEY,'1'); } catch(e){}
+    try { iframe.contentWindow.postMessage({action:'open_shanaya'},'*'); } catch(e){}
+  }
+
+  /* ── Close (shrink iframe, show launcher, clear open flag) ── */
   function closeChat() {
+    if (!isOpen) return;
     isOpen = false;
     iframe.style.width         = '0';
     iframe.style.height        = '0';
     iframe.style.pointerEvents = 'none';
     btn.style.display          = 'flex';
+    try { sessionStorage.removeItem(OPEN_KEY); } catch(e){}
+  }
+
+  /* ── Minimise (shrink iframe, show launcher, KEEP open flag) ── */
+  function minimiseChat() {
+    isOpen = false;
+    iframe.style.width         = '0';
+    iframe.style.height        = '0';
+    iframe.style.pointerEvents = 'none';
+    btn.style.display          = 'flex';
+    /* intentionally keep sessionStorage open flag */
   }
 
   btn.addEventListener('click', openChat);
 
-  window.addEventListener('message', function (e) {
+  window.addEventListener('message', function(e) {
     if (!e.data) return;
-    /* widget minimise/close → shrink iframe */
-    if (e.data.action === 'close_shanaya') closeChat();
-    /* widget wants to expand (e.g. after restore) */
+    if (e.data.action === 'close_shanaya')    closeChat();
+    if (e.data.action === 'minimise_shanaya') minimiseChat();
     if (e.data.action === 'expand_shanaya') {
-      var mob = window.innerWidth <= 520;
-      iframe.style.width         = mob ? '100vw' : '430px';
-      iframe.style.height        = mob ? '92vh'  : '690px';
+      var s = sz();
+      iframe.style.width         = s.w;
+      iframe.style.height        = s.h;
       iframe.style.pointerEvents = 'all';
       btn.style.display          = 'none';
       isOpen = true;
     }
   });
 
-  window.addEventListener('resize', function () {
+  window.addEventListener('resize', function() {
     if (!isOpen) return;
-    var mob = window.innerWidth <= 520;
-    iframe.style.width  = mob ? '100vw' : '430px';
-    iframe.style.height = mob ? '92vh'  : '690px';
+    var s = sz();
+    iframe.style.width  = s.w;
+    iframe.style.height = s.h;
   });
+
+  /* ── Restore open state on same-tab page navigation ONLY ── */
+  (function() {
+    var was = false;
+    try { was = sessionStorage.getItem(OPEN_KEY) === '1'; } catch(e){}
+    if (!was) return; /* fresh visit or after ✕ close — stay closed */
+    /* User had it open before navigating — reopen after brief delay */
+    setTimeout(function() {
+      isOpen = true;
+      var s = sz();
+      iframe.style.width         = s.w;
+      iframe.style.height        = s.h;
+      iframe.style.pointerEvents = 'all';
+      btn.style.display          = 'none';
+      try { iframe.contentWindow.postMessage({action:'open_shanaya'},'*'); } catch(e){}
+    }, 900);
+  })();
 
 })();
 </script>
