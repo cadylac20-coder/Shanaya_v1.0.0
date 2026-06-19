@@ -11,7 +11,7 @@ from ai_engine import chat
 from actions import actions
 from memory import clear_history, get_session_summary
 from auth import verify_api_key
-from config_final2 import ALLOWED_ORIGINS
+from config import ALLOWED_ORIGINS
 
 init_db()
 app = FastAPI(title="MKOV Shanaya", version="3.0.0", docs_url="/docs")
