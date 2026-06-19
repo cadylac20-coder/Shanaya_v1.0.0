@@ -1,9 +1,10 @@
 """
-AI Engine — Shanaya, MKOV Travel Assistant
+AI Engine v5 Final — Shanaya
 - Gemini gemini-3.1-flash-lite
-- Identity gate: requires Name, Phone_Number before any travel chat
-- Visit counter: tells returning users how many times they've chatted
-- Per-phone lead tracking across sessions
+- Identity gate: Name, Phone Number (spaces allowed in both)
+- Visit counter for returning users
+- Google Flights via SerpApi + internal portal fallback
+- Answers questions first, never blocks with interrogation
 """
 
 import re
@@ -15,204 +16,199 @@ from config import GEMINI_API_KEY, MODEL, TEMPERATURE, MAX_TOKENS, SYSTEM_PROMPT
 print(f"✓ Shanaya AI Engine — {MODEL}")
 genai.configure(api_key=GEMINI_API_KEY)
 
+try:
+    from google_flights import detect_flight_query, search_google_flights, format_for_shanaya
+    from config import SERPAPI_KEY
+    GFLIGHTS = bool(SERPAPI_KEY)
+    print(f"✓ Google Flights: {'enabled' if GFLIGHTS else 'disabled (no SERPAPI_KEY)'}")
+except Exception as e:
+    GFLIGHTS = False
+    print(f"⚠ Google Flights not loaded: {e}")
+
+try:
+    from flight_scraper import is_flight_query as _pdetect, search_flights as _psearch, format_flights_for_shanaya as _pfmt
+    PORTAL = True
+    print("✓ Internal flight portal loaded")
+except Exception as e:
+    PORTAL = False
+
 
 # ── Identity helpers ──────────────────────────────────────────────────────────
 
 def get_lead_by_session(session_id: str):
-    """Return lead row for this session, or None."""
     conn = get_db()
-    row = conn.execute(
-        """SELECT l.* FROM leads l
-           JOIN sessions s ON s.lead_id = l.id
-           WHERE s.session_id = ?""",
+    row  = conn.execute(
+        """SELECT l.* FROM leads l JOIN sessions s ON s.lead_id=l.id WHERE s.session_id=?""",
         (session_id,)
     ).fetchone()
     conn.close()
     return row
 
 
-def get_lead_by_phone(phone: str):
-    """Return existing lead for this phone number, or None."""
-    conn = get_db()
-    row = conn.execute(
-        "SELECT * FROM leads WHERE contact_phone = ?", (phone,)
-    ).fetchone()
-    conn.close()
-    return row
-
-
-def link_session_to_lead(session_id: str, lead_id: int):
-    conn = get_db()
-    conn.execute(
-        "INSERT OR IGNORE INTO sessions (session_id, lead_id) VALUES (?, ?)",
-        (session_id, lead_id)
-    )
-    conn.commit()
-    conn.close()
-
-
 def create_or_update_lead(session_id: str, name: str, phone: str) -> dict:
-    """
-    Create new lead or increment visit_count for returning user.
-    Returns dict with name, phone, visit_count, is_returning.
-    """
-    conn = get_db()
-    existing = conn.execute(
-        "SELECT * FROM leads WHERE contact_phone = ?", (phone,)
-    ).fetchone()
-
+    conn     = get_db()
+    existing = conn.execute("SELECT * FROM leads WHERE contact_phone=?", (phone,)).fetchone()
     if existing:
-        # Returning user — increment visit count
         new_count = existing["visit_count"] + 1
         conn.execute(
-            """UPDATE leads SET visit_count = ?, last_seen = CURRENT_TIMESTAMP,
-               contact_name = ? WHERE contact_phone = ?""",
+            "UPDATE leads SET visit_count=?,last_seen=CURRENT_TIMESTAMP,contact_name=? WHERE contact_phone=?",
             (new_count, name, phone)
         )
         lead_id = existing["id"]
-        conn.commit()
-        conn.close()
-        link_session_to_lead(session_id, lead_id)
-        return {
-            "name": name, "phone": phone,
-            "visit_count": new_count, "is_returning": True
-        }
+        conn.commit(); conn.close()
+        _link(session_id, lead_id)
+        return {"name": name, "phone": phone, "visit_count": new_count, "is_returning": True}
     else:
-        # New user
         cur = conn.execute(
-            """INSERT INTO leads (contact_name, contact_phone, identity_given, visit_count)
-               VALUES (?, ?, 1, 1)""",
+            "INSERT INTO leads (contact_name,contact_phone,identity_given,visit_count) VALUES (?,?,1,1)",
             (name, phone)
         )
         lead_id = cur.lastrowid
-        conn.commit()
-        conn.close()
-        link_session_to_lead(session_id, lead_id)
-        return {
-            "name": name, "phone": phone,
-            "visit_count": 1, "is_returning": False
-        }
+        conn.commit(); conn.close()
+        _link(session_id, lead_id)
+        return {"name": name, "phone": phone, "visit_count": 1, "is_returning": False}
+
+
+def _link(session_id, lead_id):
+    conn = get_db()
+    conn.execute("INSERT OR IGNORE INTO sessions (session_id,lead_id) VALUES (?,?)", (session_id, lead_id))
+    conn.commit(); conn.close()
 
 
 def try_parse_identity(text: str):
     """
-    Parse 'Name, Phone_Number' from message. 
+    Parse 'Name, Phone Number' from message.
+    - Name can have spaces (Rahul Sharma)
+    - Phone can have spaces/dashes (98765 43210)
+    - Separator is a comma
     """
-    pattern = r'^([A-Za-z][A-Za-z\s\.]{1,48}),\s*(\+?[\d\s\-]{8,15})$'
-    m = re.match(pattern, text.strip())
-    if m:
-        name  = m.group(1).strip()
-        phone = re.sub(r'[\s\-]', '', m.group(2).strip())
-        if len(phone) >= 8:
-            return name, phone
-            
-    return None, None
+    text = text.strip()
+    # Split on first comma only
+    if ',' not in text:
+        return None, None
+    comma_idx = text.index(',')
+    name_part  = text[:comma_idx].strip()
+    phone_part = text[comma_idx+1:].strip()
+
+    # Validate name: at least 2 chars, mostly letters and spaces
+    if len(name_part) < 2:
+        return None, None
+    if not re.match(r'^[A-Za-z][A-Za-z\s\.]{1,49}$', name_part):
+        return None, None
+
+    # Validate phone: strip spaces/dashes, must be 8-15 digits
+    phone_clean = re.sub(r'[\s\-\(\)\+]', '', phone_part)
+    if not phone_clean.isdigit() or not (8 <= len(phone_clean) <= 15):
+        return None, None
+
+    return name_part, phone_clean
 
 
-# ── Main chat function ────────────────────────────────────────────────────────
+# ── Flight context ────────────────────────────────────────────────────────────
+
+def get_flight_context(message: str) -> str:
+    if GFLIGHTS:
+        try:
+            q = detect_flight_query(message)
+            if not q["is_flight"]:
+                return ""
+            if not q["origin"] or not q["destination"]:
+                return "[GOOGLE FLIGHTS DATA]\nUser asking about flights but route unclear. Ask: which city flying from, which city flying to, and on what date?"
+            result = search_google_flights(
+                origin=q["origin"], destination=q["destination"],
+                date=q["date"], return_date=q.get("return_date"), adults=q.get("adults",1)
+            )
+            return format_for_shanaya(result, q["origin"], q["destination"], q["date"] or "")
+        except Exception as e:
+            print(f"[FLIGHTS] GFlights error: {e}")
+
+    if PORTAL:
+        try:
+            is_fl, origin, dest, date = _pdetect(message)
+            if not is_fl: return ""
+            if not origin or not dest:
+                return "[FLIGHT DATA]\nUser asking about flights. Ask which city flying from and to."
+            result = _psearch(origin, dest, date or "next available")
+            return _pfmt(result)
+        except Exception as e:
+            print(f"[FLIGHTS] Portal error: {e}")
+
+    return ""
+
+
+# ── Main chat ─────────────────────────────────────────────────────────────────
 
 def chat(session_id: str, user_message: str) -> dict:
     print(f"[CHAT] {session_id[:12]} | {user_message[:60]}")
 
-    # ── Check if session already has identity linked ──────────────────────────
     existing_lead = get_lead_by_session(session_id)
 
     if not existing_lead:
-        # No identity for this session yet — try to parse it
         name, phone = try_parse_identity(user_message)
-
         if name and phone:
-            # Identity just provided
-            lead_info = create_or_update_lead(session_id, name, phone)
+            info = create_or_update_lead(session_id, name, phone)
             save_message(session_id, "user", user_message)
-            first_name = name.split()[0]
-
-            if lead_info["is_returning"]:
-                count = lead_info["visit_count"]
+            first = name.split()[0]
+            if info["is_returning"]:
+                count = info["visit_count"]
                 reply = (
-                    f"Welcome back, {first_name}! 🙏 Wonderful to hear from you again.\n\n"
-                    f"You've chatted with me **{count} time{'s' if count != 1 else ''}** — "
-                    f"I hope I've been helpful each time!\n\n"
-                    f"What trip are we planning today?"
+                    f"Welcome back, {first}! 🙏 Great to hear from you again.\n\n"
+                    f"You've chatted with me **{count} time{'s' if count!=1 else ''}** now — "
+                    f"I hope each time was helpful!\n\nWhat trip are we planning today?"
                 )
             else:
                 reply = (
-                    f"Wonderful to meet you, {first_name}! 🙏 "
-                    f"Welcome to Uniglobe MKOV Travel. I'm Shanaya, your personal travel assistant.\n\n"
-                    f"What kind of trip are you dreaming of? Whether it's a beach holiday, "
-                    f"honeymoon, adventure, or family trip — I'm here to help!"
+                    f"Wonderful to meet you, {first}! 🙏 "
+                    f"I'm Shanaya, your travel assistant at Uniglobe MKOV Travel.\n\n"
+                    f"What kind of trip are you dreaming of? I can help with destinations, "
+                    f"itineraries, visas, and even find you the cheapest flights! ✈️"
                 )
-
             save_message(session_id, "assistant", reply)
-            return {
-                "reply":          reply,
-                "session_id":     session_id,
-                "extracted_data": {"contact_name": name, "contact_phone": phone},
-                "missing_fields": [],
-                "is_complete":    False,
-                "identity_given": True,
-            }
+            return _r(reply, session_id, name, True)
         else:
-            # Still no identity — keep asking
             save_message(session_id, "user", user_message)
             reply = (
                 "Hi there! 👋 Before we get started, I need your name and phone number "
                 "so our team can assist you better.\n\n"
-                "Please reply in this format:\n**Name, Phone_Number**\n\n"
+                "Please reply like this:\n**Name, Phone Number**\n\n"
                 "Example: Rahul Sharma, 9876543210"
             )
             save_message(session_id, "assistant", reply)
-            return {
-                "reply":          reply,
-                "session_id":     session_id,
-                "extracted_data": {},
-                "missing_fields": ["contact_name", "contact_phone"],
-                "is_complete":    False,
-                "identity_given": False,
-            }
+            return _r(reply, session_id, None, False)
 
-    # ── Identity confirmed — normal Gemini chat ───────────────────────────────
     save_message(session_id, "user", user_message)
-    history = get_history(session_id)
-
+    history  = get_history(session_id)
     contents = []
     for msg in history[:-1]:
         role = "model" if msg["role"] == "assistant" else "user"
         contents.append({"role": role, "parts": [{"text": msg["content"]}]})
 
+    flight_ctx = get_flight_context(user_message)
+    final_msg  = f"{flight_ctx}\n\nUser: {user_message}" if flight_ctx else user_message
+
     try:
-        gemini_model = genai.GenerativeModel(
-            model_name=MODEL,
-            system_instruction=SYSTEM_PROMPT,
-        )
-        chat_session = gemini_model.start_chat(history=contents)
-        response = chat_session.send_message(
-            user_message,
-            generation_config={
-                "temperature": TEMPERATURE,
-                "max_output_tokens": MAX_TOKENS,
-            },
+        model        = genai.GenerativeModel(model_name=MODEL, system_instruction=SYSTEM_PROMPT)
+        chat_session = model.start_chat(history=contents)
+        response     = chat_session.send_message(
+            final_msg,
+            generation_config={"temperature": TEMPERATURE, "max_output_tokens": MAX_TOKENS}
         )
         reply = response.text.strip() if response.text else "Could you repeat that? 🙏"
         print(f"[CHAT] ✓ {reply[:80]}")
-
     except Exception as e:
         import traceback; traceback.print_exc()
-        reply = (
-            "I'm having a brief technical issue. 🙏 "
-            "Please try again, or call our team at **+91 8010700700**."
-        )
+        reply = "I'm having a brief technical issue. 🙏 Please try again or call **+91 8010700700**."
 
     save_message(session_id, "assistant", reply)
+    return _r(reply, session_id, existing_lead["contact_name"], True)
+
+
+def _r(reply, sid, name, identity_given):
     return {
-        "reply":          reply,
-        "session_id":     session_id,
-        "extracted_data": {"contact_name": existing_lead["contact_name"]},
-        "missing_fields": [],
-        "is_complete":    False,
-        "identity_given": True,
+        "reply": reply, "session_id": sid,
+        "extracted_data": {"contact_name": name} if name else {},
+        "missing_fields": [], "is_complete": False,
+        "identity_given": identity_given,
     }
 
-
-def lookup_packages(destination, budget, dates, group):
-    return []
+def lookup_packages(*a): return []
