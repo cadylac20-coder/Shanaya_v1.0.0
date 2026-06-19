@@ -14,6 +14,6 @@ def init_db():
     c.execute("CREATE TABLE IF NOT EXISTS holds (id INTEGER PRIMARY KEY AUTOINCREMENT,session_id TEXT NOT NULL,hold_id TEXT UNIQUE NOT NULL,destination TEXT,travel_dates TEXT,hours INTEGER DEFAULT 24,status TEXT DEFAULT 'active',created_at DATETIME DEFAULT CURRENT_TIMESTAMP)")
     c.execute("CREATE TABLE IF NOT EXISTS ancillaries (id INTEGER PRIMARY KEY AUTOINCREMENT,booking_id TEXT NOT NULL,ancillary_id TEXT UNIQUE NOT NULL,type TEXT NOT NULL,price INTEGER NOT NULL,details TEXT,created_at DATETIME DEFAULT CURRENT_TIMESTAMP)")
     c.execute("CREATE TABLE IF NOT EXISTS support_tickets (id INTEGER PRIMARY KEY AUTOINCREMENT,ticket_id TEXT UNIQUE NOT NULL,session_id TEXT NOT NULL,request_text TEXT NOT NULL,status TEXT DEFAULT 'open',created_at DATETIME DEFAULT CURRENT_TIMESTAMP)")
-    from config_final2 import DEFAULT_API_KEY
+    from config import DEFAULT_API_KEY
     c.execute("INSERT OR IGNORE INTO api_keys (key,name) VALUES (?,?)",(DEFAULT_API_KEY,"Development Key"))
     conn.commit(); conn.close(); print(f"✓ DB ready: {DB_PATH}")
