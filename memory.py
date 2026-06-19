@@ -1,5 +1,5 @@
 from database import get_db
-from config_final2 import MAX_HISTORY
+from config import MAX_HISTORY
 
 def get_history(session_id):
     conn=get_db(); rows=conn.execute("SELECT role,content FROM conversations WHERE session_id=? ORDER BY id DESC LIMIT ?",(session_id,MAX_HISTORY)).fetchall(); conn.close()
