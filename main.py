@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from enum import Enum
 from typing import Optional
 from database import init_db, get_db
-from ai_engine_final2 import chat
+from ai_engine import chat
 from actions import actions
 from memory import clear_history, get_session_summary
 from auth import verify_api_key
