@@ -1,7 +1,7 @@
 """
 AI Engine v5 Final — Shanaya
 - Gemini gemini-3.1-flash-lite
-- Identity gate: Name, Phone Number (spaces allowed in both)
+- Identity gate: Name, Phone Number (highly flexible parsing, spaces/natural text allowed)
 - Visit counter for returning users
 - Google Flights via SerpApi + internal portal fallback
 - Answers questions first, never blocks with interrogation
@@ -77,31 +77,62 @@ def _link(session_id, lead_id):
 
 def try_parse_identity(text: str):
     """
-    Parse 'Name, Phone Number' from message.
-    - Name can have spaces (Rahul Sharma)
-    - Phone can have spaces/dashes (98765 43210)
-    - Separator is a comma
+    Flexible identity parser that handles names and numbers written anyway.
+    - Supports traditional 'Name, Phone' format
+    - Supports natural phrases: 'My name is Amit and my number is 9999988888'
+    - Extracts 8-15 digit contact numbers and alphabetical text blocks as names
     """
     text = text.strip()
-    # Split on first comma only
-    if ',' not in text:
-        return None, None
-    comma_idx = text.index(',')
-    name_part  = text[:comma_idx].strip()
-    phone_part = text[comma_idx+1:].strip()
+    
+    # 1. Prioritize a direct comma split if present and structured cleanly
+    if ',' in text:
+        parts = text.split(',', 1)
+        p1, p2 = parts[0].strip(), parts[1].strip()
+        p1_clean = re.sub(r'[\s\-\(\)\+]', '', p1)
+        p2_clean = re.sub(r'[\s\-\(\)\+]', '', p2)
+        
+        if p2_clean.isdigit() and (8 <= len(p2_clean) <= 15) and re.match(r'^[A-Za-z][A-Za-z\s\.]{1,49}$', p1):
+            return p1, p2_clean
+        if p1_clean.isdigit() and (8 <= len(p1_clean) <= 15) and re.match(r'^[A-Za-z][A-Za-z\s\.]{1,49}$', p2):
+            return p2, p1_clean
 
-    # Validate name: at least 2 chars, mostly letters and spaces
-    if len(name_part) < 2:
-        return None, None
-    if not re.match(r'^[A-Za-z][A-Za-z\s\.]{1,49}$', name_part):
-        return None, None
-
-    # Validate phone: strip spaces/dashes, must be 8-15 digits
-    phone_clean = re.sub(r'[\s\-\(\)\+]', '', phone_part)
-    if not phone_clean.isdigit() or not (8 <= len(phone_clean) <= 15):
-        return None, None
-
-    return name_part, phone_clean
+    # 2. Universal Extraction Strategy (Find number first, then isolate name)
+    phone_matches = re.findall(r'\+?[\d\s\-\(\)]{8,18}', text)
+    phone_clean = None
+    phone_raw = None
+    
+    for match in phone_matches:
+        cleaned = re.sub(r'[\s\-\(\)\+]', '', match)
+        if cleaned.isdigit() and (8 <= len(cleaned) <= 15):
+            phone_clean = cleaned
+            phone_raw = match
+            break
+            
+    if not phone_clean:
+        # Fallback digit gathering if punctuation is dense
+        digits = re.sub(r'\D', '', text)
+        if 8 <= len(digits) <= 15:
+            phone_clean = digits
+            text_no_phone = re.sub(r'\d+', '', text).strip()
+        else:
+            return None, None
+    else:
+        text_no_phone = text.replace(phone_raw, "").strip()
+    
+    # Remove conversational filler words to extract just the name
+    filler_regex = r'\b(my name is|i am|i\'m|this is|call me|myself|hi|hello|hey|dear|and|is|mr|ms|mrs|phone|number|mobile|contact|details)\b'
+    clean_text = re.sub(filler_regex, '', text_no_phone, flags=re.IGNORECASE)
+    clean_text = re.sub(r'[,\.:\-\|\(\)]', ' ', clean_text).strip()
+    clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+    
+    # Look for a valid string of alphabets representing a name
+    name_match = re.search(r'\b[A-Za-z][A-Za-z\s\.]{1,49}\b', clean_text)
+    if name_match:
+        name_part = name_match.group(0).strip()
+        if len(name_part) >= 2:
+            return name_part, phone_clean
+            
+    return None, None
 
 
 # ── Flight context ────────────────────────────────────────────────────────────
@@ -168,10 +199,8 @@ def chat(session_id: str, user_message: str) -> dict:
         else:
             save_message(session_id, "user", user_message)
             reply = (
-                "Hi there! 👋 Before we get started, I need your name and phone number "
-                "so our team can assist you better.\n\n"
-                "Please reply like this:\n**Name, Phone Number**\n\n"
-                "Example: Rahul Sharma, 9876543210"
+                "Hi there! 👋 Before we get started, could you please share your name and phone number "
+                "so our team can assist you better?"
             )
             save_message(session_id, "assistant", reply)
             return _r(reply, session_id, None, False)
