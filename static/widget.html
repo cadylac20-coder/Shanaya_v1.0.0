@@ -243,8 +243,8 @@ window.addEventListener('message', function(e) {
 });
 
 function showWelcome() {
-  appendBot('Hi there! 👋 Before we get started, I need your name and phone number so our team can assist you better.\n\nPlease reply like this:\n**Name, Phone Number**\n\nExample: Rahul Sharma, 9876543210');
-  document.getElementById('chat-input').placeholder = 'Name, Phone Number';
+  appendBot('Hi there! 👋 Before we get started, please share your name and phone number so our team can assist you better.\n\nJust type them together — for example:\n**Rahul Sharma 9876543210**\n\nNo commas or special format needed!');
+  document.getElementById('chat-input').placeholder = 'Your name and phone number';
 }
 
 function openPanel() {
