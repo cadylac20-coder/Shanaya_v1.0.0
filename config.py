@@ -69,50 +69,37 @@ VERIFIED TOUR PACKAGE LINKS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Always use [text](URL) format. Include relevant link with every suggestion.
 
-DOMESTIC:
-All domestic:     https://uniglobemkov.in/domestic-tour-packages/
-Goa:              https://uniglobemkov.in/goa-tour-packages/
-Kerala:           https://uniglobemkov.in/kerala-tour-packages/
-Rajasthan:        https://uniglobemkov.in/rajasthan-tour-packages/
-Himachal:         https://uniglobemkov.in/himachal-pradesh-tour-packages/
-Kashmir:          https://uniglobemkov.in/kashmir-tour-packages/
-Andaman:          https://uniglobemkov.in/andaman-tour-packages/
-Uttarakhand:      https://uniglobemkov.in/uttarakhand-tour-packages/
-Ladakh:           https://uniglobemkov.in/ladakh-tour-packages/
-Northeast:        https://uniglobemkov.in/northeast-tour-packages/
-Jim Corbett:      https://uniglobemkov.in/jim-corbett-tour-packages/
-
-INTERNATIONAL:
-All intl:         https://uniglobemkov.in/international-tour-packages/
-Bali:             https://uniglobemkov.in/bali-tour-packages/
-Thailand:         https://uniglobemkov.in/thailand-tour-packages/
-Dubai:            https://uniglobemkov.in/dubai-tour-packages/
-Singapore:        https://uniglobemkov.in/singapore-tour-packages/
-Maldives:         https://uniglobemkov.in/maldives-tour-packages/
-Europe:           https://uniglobemkov.in/europe-tour-packages/
-Sri Lanka:        https://uniglobemkov.in/sri-lanka-tour-packages/
-Nepal:            https://uniglobemkov.in/nepal-tour-packages/
-Bhutan:           https://uniglobemkov.in/bhutan-tour-packages/
-Vietnam:          https://uniglobemkov.in/vietnam-tour-packages/
-Malaysia:         https://uniglobemkov.in/malaysia-tour-packages/
-Mauritius:        https://uniglobemkov.in/mauritius-tour-packages/
+TRIPS:
+Indonesia:        https://uniglobemkov.in/trip/?destination=indonesia&search=
+Thailand:         https://uniglobemkov.in/trip/?destination=thailand&search=
+Japan:            https://uniglobemkov.in/trip/?destination=japan&search=
+Singapore:        https://uniglobemkov.in/trip/?destination=singapore&search=
+Europe:           https://uniglobemkov.in/trip/?destination=europe&search=
+Sri Lanka:        https://uniglobemkov.in/trip/?destination=sri-lanka&search=
+Canada:           https://uniglobemkov.in/trip/?destination=canada&search=
+China:            https://uniglobemkov.in/trip/?destination=china&search=
+Mexico:           https://uniglobemkov.in/trip/?destination=mexico%2Cusa&search=
+India:            https://uniglobemkov.in/trip/?destination=india&search=
+Kazakhastan:      https://uniglobemkov.in/trip/?destination=kazakhstan&search=
+New Zealand:      https://uniglobemkov.in/trip/?destination=new-zealand&search=
+Turkey:           https://uniglobemkov.in/trip/?destination=turkey&search=
+USA:              https://uniglobemkov.in/trip/?destination=usa&search=
+Mauritius:        https://uniglobemkov.in/trip/?destination=mauritius&search=
 
 SPECIAL:
-Honeymoon:        https://uniglobemkov.in/honeymoon-tour-packages/
-Family:           https://uniglobemkov.in/family-tour-packages/
-Group:            https://uniglobemkov.in/group-tour-packages/
-Weekend:          https://uniglobemkov.in/weekend-tour-packages/
-Adventure:        https://uniglobemkov.in/adventure-tour-packages/
-Pilgrimage:       https://uniglobemkov.in/pilgrimage-tour-packages/
-Corporate:        https://uniglobemkov.in/corporate-tour-packages/
+Honeymoon:        https://uniglobemkov.in/honeymoon/
+Family:           https://uniglobemkov.in/family/
+Inbound:          https://uniglobemkov.in/inbound/
+Luxury:           https://uniglobemkov.in/luxury/
+Adventure:        https://uniglobemkov.in/adventure/
+Offers:           https://uniglobemkov.in/festive-deals/
 
 SERVICES:
-Visa:             https://uniglobemkov.in/visa-services/
-Flights:          https://uniglobemkov.in/flight-booking/
+Visa:             https://uniglobemkov.in/visa/
 Hotels:           https://uniglobemkov.in/hotel-booking/
-Cruises:          https://uniglobemkov.in/cruise-packages/
-Car rental:       https://uniglobemkov.in/car-rental/
-Contact:          https://uniglobemkov.in/contact/
+Cruises:          https://uniglobemkov.in/cruise-holidays/
+MICE:             https://uniglobemkov.in/mice/
+Contact:          https://uniglobemkov.in/contact-us/
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 VERIFIED VISA CHECKLIST LINKS
