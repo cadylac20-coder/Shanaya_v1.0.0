@@ -1,10 +1,10 @@
 """
-AI Engine v5 Final — Shanaya
-- Gemini gemini-3.1-flash-lite
-- Identity gate: Name, Phone Number (highly flexible parsing, spaces/natural text allowed)
+AI Engine v6 — Shanaya, MKOV Travel Assistant
+Fixes:
+- Lax name+phone parsing: no comma needed, spaces ok, any order
 - Visit counter for returning users
-- Google Flights via SerpApi + internal portal fallback
-- Answers questions first, never blocks with interrogation
+- Google Flights + internal portal fallback
+- Answers questions first, never interrogates
 """
 
 import re
@@ -13,23 +13,20 @@ from memory import get_history, save_message
 from database import get_db
 from config import GEMINI_API_KEY, MODEL, TEMPERATURE, MAX_TOKENS, SYSTEM_PROMPT
 
-print(f"✓ Shanaya AI Engine — {MODEL}")
+print(f"✓ Shanaya AI Engine v6 — {MODEL}")
 genai.configure(api_key=GEMINI_API_KEY)
 
 try:
     from google_flights import detect_flight_query, search_google_flights, format_for_shanaya
     from config import SERPAPI_KEY
     GFLIGHTS = bool(SERPAPI_KEY)
-    print(f"✓ Google Flights: {'enabled' if GFLIGHTS else 'disabled (no SERPAPI_KEY)'}")
-except Exception as e:
+except Exception:
     GFLIGHTS = False
-    print(f"⚠ Google Flights not loaded: {e}")
 
 try:
-    from flight_scraper import is_flight_query as _pdetect, search_flights as _psearch, format_flights_for_shanaya as _pfmt
+    from flight_scraper import is_flight_query as _pd, search_flights as _ps, format_flights_for_shanaya as _pf
     PORTAL = True
-    print("✓ Internal flight portal loaded")
-except Exception as e:
+except Exception:
     PORTAL = False
 
 
@@ -38,7 +35,7 @@ except Exception as e:
 def get_lead_by_session(session_id: str):
     conn = get_db()
     row  = conn.execute(
-        """SELECT l.* FROM leads l JOIN sessions s ON s.lead_id=l.id WHERE s.session_id=?""",
+        "SELECT l.* FROM leads l JOIN sessions s ON s.lead_id=l.id WHERE s.session_id=?",
         (session_id,)
     ).fetchone()
     conn.close()
@@ -46,7 +43,7 @@ def get_lead_by_session(session_id: str):
 
 
 def create_or_update_lead(session_id: str, name: str, phone: str) -> dict:
-    conn     = get_db()
+    conn = get_db()
     existing = conn.execute("SELECT * FROM leads WHERE contact_phone=?", (phone,)).fetchone()
     if existing:
         new_count = existing["visit_count"] + 1
@@ -77,62 +74,44 @@ def _link(session_id, lead_id):
 
 def try_parse_identity(text: str):
     """
-    Flexible identity parser that handles names and numbers written anyway.
-    - Supports traditional 'Name, Phone' format
-    - Supports natural phrases: 'My name is Amit and my number is 9999988888'
-    - Extracts 8-15 digit contact numbers and alphabetical text blocks as names
+    Lax name + phone parser. Accepts all of:
+      Rahul Sharma, 9876543210
+      Rahul Sharma 9876543210
+      Rahul Sharma9876543210
+      9876543210 Rahul Sharma
+      rahul 98765 43210
+    Rules:
+      - Phone = 8-15 digits (spaces/dashes stripped)
+      - Name  = remaining text after removing phone, must be 2-50 chars, letters only
     """
-    text = text.strip()
-    
-    # 1. Prioritize a direct comma split if present and structured cleanly
-    if ',' in text:
-        parts = text.split(',', 1)
-        p1, p2 = parts[0].strip(), parts[1].strip()
-        p1_clean = re.sub(r'[\s\-\(\)\+]', '', p1)
-        p2_clean = re.sub(r'[\s\-\(\)\+]', '', p2)
-        
-        if p2_clean.isdigit() and (8 <= len(p2_clean) <= 15) and re.match(r'^[A-Za-z][A-Za-z\s\.]{1,49}$', p1):
-            return p1, p2_clean
-        if p1_clean.isdigit() and (8 <= len(p1_clean) <= 15) and re.match(r'^[A-Za-z][A-Za-z\s\.]{1,49}$', p2):
-            return p2, p1_clean
+    raw = text.strip()
 
-    # 2. Universal Extraction Strategy (Find number first, then isolate name)
-    phone_matches = re.findall(r'\+?[\d\s\-\(\)]{8,18}', text)
-    phone_clean = None
-    phone_raw = None
-    
-    for match in phone_matches:
-        cleaned = re.sub(r'[\s\-\(\)\+]', '', match)
-        if cleaned.isdigit() and (8 <= len(cleaned) <= 15):
-            phone_clean = cleaned
-            phone_raw = match
-            break
-            
-    if not phone_clean:
-        # Fallback digit gathering if punctuation is dense
-        digits = re.sub(r'\D', '', text)
-        if 8 <= len(digits) <= 15:
-            phone_clean = digits
-            text_no_phone = re.sub(r'\d+', '', text).strip()
-        else:
-            return None, None
-    else:
-        text_no_phone = text.replace(phone_raw, "").strip()
-    
-    # Remove conversational filler words to extract just the name
-    filler_regex = r'\b(my name is|i am|i\'m|this is|call me|myself|hi|hello|hey|dear|and|is|mr|ms|mrs|phone|number|mobile|contact|details)\b'
-    clean_text = re.sub(filler_regex, '', text_no_phone, flags=re.IGNORECASE)
-    clean_text = re.sub(r'[,\.:\-\|\(\)]', ' ', clean_text).strip()
-    clean_text = re.sub(r'\s+', ' ', clean_text).strip()
-    
-    # Look for a valid string of alphabets representing a name
-    name_match = re.search(r'\b[A-Za-z][A-Za-z\s\.]{1,49}\b', clean_text)
-    if name_match:
-        name_part = name_match.group(0).strip()
-        if len(name_part) >= 2:
-            return name_part, phone_clean
-            
-    return None, None
+    # Extract phone: find a sequence of digits (with optional spaces/dashes between)
+    # that totals 8-15 digits
+    phone_match = re.search(r'(\+?[\d][\d\s\-]{6,18}[\d])', raw)
+    if not phone_match:
+        return None, None
+
+    phone_raw   = phone_match.group(1)
+    phone_clean = re.sub(r'[\s\-]', '', phone_raw)
+
+    # Must be 8-15 digits
+    if not phone_clean.isdigit() or not (8 <= len(phone_clean) <= 15):
+        return None, None
+
+    # Remove phone from text to get name
+    name_part = raw.replace(phone_raw, '').strip()
+    # Clean up leftover commas/punctuation
+    name_part = re.sub(r'[,\.\-]+', ' ', name_part).strip()
+    name_part = re.sub(r'\s+', ' ', name_part)
+
+    # Validate name: 2-50 chars, only letters and spaces
+    if not name_part or len(name_part) < 2 or len(name_part) > 50:
+        return None, None
+    if not re.match(r'^[A-Za-z][A-Za-z\s\.]{1,49}$', name_part):
+        return None, None
+
+    return name_part.strip(), phone_clean
 
 
 # ── Flight context ────────────────────────────────────────────────────────────
@@ -141,28 +120,26 @@ def get_flight_context(message: str) -> str:
     if GFLIGHTS:
         try:
             q = detect_flight_query(message)
-            if not q["is_flight"]:
-                return ""
+            if not q["is_flight"]: return ""
             if not q["origin"] or not q["destination"]:
-                return "[GOOGLE FLIGHTS DATA]\nUser asking about flights but route unclear. Ask: which city flying from, which city flying to, and on what date?"
+                return "[GOOGLE FLIGHTS DATA]\nUser asking about flights but route unclear. Ask which city flying from, which city to, and on what date."
             result = search_google_flights(
                 origin=q["origin"], destination=q["destination"],
-                date=q["date"], return_date=q.get("return_date"), adults=q.get("adults",1)
+                date=q["date"], return_date=q.get("return_date"), adults=q.get("adults", 1)
             )
             return format_for_shanaya(result, q["origin"], q["destination"], q["date"] or "")
         except Exception as e:
-            print(f"[FLIGHTS] GFlights error: {e}")
+            print(f"[FLIGHTS] Error: {e}")
 
     if PORTAL:
         try:
-            is_fl, origin, dest, date = _pdetect(message)
+            is_fl, origin, dest, date = _pd(message)
             if not is_fl: return ""
             if not origin or not dest:
                 return "[FLIGHT DATA]\nUser asking about flights. Ask which city flying from and to."
-            result = _psearch(origin, dest, date or "next available")
-            return _pfmt(result)
+            return _pf(_ps(origin, dest, date or "next available"))
         except Exception as e:
-            print(f"[FLIGHTS] Portal error: {e}")
+            print(f"[PORTAL] Error: {e}")
 
     return ""
 
@@ -177,34 +154,38 @@ def chat(session_id: str, user_message: str) -> dict:
     if not existing_lead:
         name, phone = try_parse_identity(user_message)
         if name and phone:
-            info = create_or_update_lead(session_id, name, phone)
+            info  = create_or_update_lead(session_id, name, phone)
             save_message(session_id, "user", user_message)
             first = name.split()[0]
             if info["is_returning"]:
                 count = info["visit_count"]
                 reply = (
                     f"Welcome back, {first}! 🙏 Great to hear from you again.\n\n"
-                    f"You've chatted with me **{count} time{'s' if count!=1 else ''}** now — "
-                    f"I hope each time was helpful!\n\nWhat trip are we planning today?"
+                    f"You've chatted with me **{count} time{'s' if count != 1 else ''}** — "
+                    f"hope each one was helpful!\n\nWhat trip are we planning today?"
                 )
             else:
                 reply = (
                     f"Wonderful to meet you, {first}! 🙏 "
                     f"I'm Shanaya, your travel assistant at Uniglobe MKOV Travel.\n\n"
                     f"What kind of trip are you dreaming of? I can help with destinations, "
-                    f"itineraries, visas, and even find you the cheapest flights! ✈️"
+                    f"itineraries, visas, and find the cheapest flights too! ✈️"
                 )
             save_message(session_id, "assistant", reply)
             return _r(reply, session_id, name, True)
         else:
             save_message(session_id, "user", user_message)
             reply = (
-                "Hi there! 👋 Before we get started, could you please share your name and phone number "
-                "so our team can assist you better?"
+                "Hi there! 👋 Before we get started, please share your name and phone number "
+                "so our team can assist you better.\n\n"
+                "Just type them together like:\n"
+                "**Rahul Sharma 9876543210**\n\n"
+                "That's all — no special format needed!"
             )
             save_message(session_id, "assistant", reply)
             return _r(reply, session_id, None, False)
 
+    # Identity confirmed — Gemini chat
     save_message(session_id, "user", user_message)
     history  = get_history(session_id)
     contents = []
