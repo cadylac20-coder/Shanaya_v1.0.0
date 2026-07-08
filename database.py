@@ -1,20 +1,35 @@
-import sqlite3
 import os
+import sqlite3
+import libsql
 
-DB_PATH = os.getenv("DB_PATH", "mkov_shanaya.db")
+TURSO_DATABASE_URL = os.getenv("TURSO_DATABASE_URL")
+TURSO_AUTH_TOKEN    = os.getenv("TURSO_AUTH_TOKEN")
+
+if not TURSO_DATABASE_URL or not TURSO_AUTH_TOKEN:
+    raise RuntimeError(
+        "TURSO_DATABASE_URL and TURSO_AUTH_TOKEN must be set. "
+        "Sign up free at https://turso.tech and add them to your "
+        "Render environment variables."
+    )
 
 
-def get_db() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
+def get_db():
+    """
+    Return a Turso connection with sqlite3.Row-style access
+    (row["column_name"] works exactly like before).
+    """
+    conn = libsql.connect(
+        database=TURSO_DATABASE_URL,
+        auth_token=TURSO_AUTH_TOKEN,
+    )
     conn.row_factory = sqlite3.Row
     return conn
 
 
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    c    = conn.cursor()
+    conn = get_db()
 
-    c.execute("""
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS conversations (
             id         INTEGER PRIMARY KEY AUTOINCREMENT,
             session_id TEXT NOT NULL,
@@ -24,7 +39,7 @@ def init_db():
         )
     """)
 
-    c.execute("""
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS api_keys (
             id         INTEGER PRIMARY KEY AUTOINCREMENT,
             key        TEXT UNIQUE NOT NULL,
@@ -34,9 +49,8 @@ def init_db():
         )
     """)
 
-    # One row per unique phone number
-    # visit_count increments every new session from same phone
-    c.execute("""
+    # One row per unique phone number — permanent across every restart
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS leads (
             id             INTEGER PRIMARY KEY AUTOINCREMENT,
             contact_name   TEXT,
@@ -53,7 +67,7 @@ def init_db():
     """)
 
     # Maps session_id → lead_id
-    c.execute("""
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS sessions (
             id         INTEGER PRIMARY KEY AUTOINCREMENT,
             session_id TEXT UNIQUE NOT NULL,
@@ -62,7 +76,7 @@ def init_db():
         )
     """)
 
-    c.execute("""
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS bookings (
             id             INTEGER PRIMARY KEY AUTOINCREMENT,
             booking_id     TEXT UNIQUE NOT NULL,
@@ -79,7 +93,7 @@ def init_db():
         )
     """)
 
-    c.execute("""
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS holds (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
             session_id   TEXT NOT NULL,
@@ -92,7 +106,7 @@ def init_db():
         )
     """)
 
-    c.execute("""
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS ancillaries (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
             booking_id   TEXT NOT NULL,
@@ -104,7 +118,7 @@ def init_db():
         )
     """)
 
-    c.execute("""
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS support_tickets (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
             ticket_id    TEXT UNIQUE NOT NULL,
@@ -115,12 +129,13 @@ def init_db():
         )
     """)
 
+    conn.commit()
+
     from config import DEFAULT_API_KEY
-    c.execute(
+    conn.execute(
         "INSERT OR IGNORE INTO api_keys (key, name) VALUES (?, ?)",
         (DEFAULT_API_KEY, "Development Key")
     )
-
     conn.commit()
-    conn.close()
-    print(f"✓ Shanaya DB ready at {DB_PATH}")
+
+    print("✓ Shanaya DB ready on Turso — permanent, survives all restarts")
