@@ -189,4 +189,4 @@ Shanaya_v1.0.0/
 
 ## Who to contact
 
-'9958058991'
+The developer of this software via the email 992501210103@mail.jiit.ac.in.
