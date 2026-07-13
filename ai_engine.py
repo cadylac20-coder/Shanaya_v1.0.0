@@ -8,13 +8,14 @@ AI Engine v6 Final — Shanaya, MKOV Travel Assistant
 """
 
 import re
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from memory import get_history, save_message
 from database import get_db
 from config import GEMINI_API_KEY, MODEL, TEMPERATURE, MAX_TOKENS, SYSTEM_PROMPT
 
 print(f"✓ Shanaya AI Engine v6 Final — {MODEL}")
-genai.configure(api_key=GEMINI_API_KEY)
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 try:
     from google_flights import detect_flight_query, search_google_flights, format_for_shanaya
@@ -228,12 +229,19 @@ def chat(session_id: str, user_message: str) -> dict:
     final_msg  = f"{flight_ctx}\n\nUser: {user_message}" if flight_ctx else user_message
 
     try:
-        model        = genai.GenerativeModel(model_name=MODEL, system_instruction=SYSTEM_PROMPT)
-        chat_session = model.start_chat(history=contents)
-        response     = chat_session.send_message(
-            final_msg,
-            generation_config={"temperature": TEMPERATURE, "max_output_tokens": MAX_TOKENS}
+        chat_session = client.chats.create(
+            model=MODEL,
+            history=[
+                types.Content(role=c["role"], parts=[types.Part.from_text(text=c["parts"][0]["text"])])
+                for c in contents
+            ],
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+                temperature=TEMPERATURE,
+                max_output_tokens=MAX_TOKENS,
+            ),
         )
+        response = chat_session.send_message(final_msg)
         reply = response.text.strip() if response.text else "Could you repeat that? 🙏"
         print(f"[CHAT] ✓ {reply[:80]}")
     except Exception as e:
