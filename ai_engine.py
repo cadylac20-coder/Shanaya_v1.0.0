@@ -246,7 +246,7 @@ def chat(session_id: str, user_message: str) -> dict:
         print(f"[CHAT] ✓ {reply[:80]}")
     except Exception as e:
         import traceback; traceback.print_exc()
-        reply = "I'm having a brief technical issue. 🙏 Please try again or call **+91 8010700700**."
+        reply = f"[DEBUG] {type(e).__name__}: {e}"  # TEMPORARY — revert to friendly message once fixed
 
     save_message(session_id, "assistant", reply)
     return {
