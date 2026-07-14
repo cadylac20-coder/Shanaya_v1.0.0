@@ -82,34 +82,6 @@ body{background:transparent;font-family:'DM Sans',sans-serif;overflow:hidden;}
 .send-btn:hover{transform:scale(1.08);}
 .send-btn:disabled{opacity:.45;cursor:default;transform:none;}
 .send-btn svg{width:14px;height:14px;fill:var(--white);}
-#menu-view{background:var(--off);padding:13px;overflow-y:auto;gap:9px;}
-.menu-welcome{background:linear-gradient(135deg,var(--navy),var(--navy-mid));border-radius:var(--r-sm);padding:13px;color:var(--white);margin-bottom:4px;}
-.menu-welcome strong{display:block;font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;margin-bottom:3px;}
-.menu-welcome p{font-size:12px;opacity:.8;line-height:1.5;}
-.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
-.menu-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 10px;cursor:pointer;transition:all var(--ease);display:flex;flex-direction:column;gap:5px;}
-.menu-card:hover{border-color:var(--navy-mid);box-shadow:var(--sh-sm);transform:translateY(-1px);}
-.menu-icon{font-size:20px;}
-.menu-label{font-size:12px;font-weight:500;color:var(--text);line-height:1.3;}
-.menu-desc{font-size:10.5px;color:var(--muted);line-height:1.4;}
-#action-modal{position:absolute;inset:0;background:rgba(13,48,85,.55);display:none;align-items:flex-end;z-index:10;}
-#action-modal.show{display:flex;}
-.modal-sheet{background:var(--white);width:100%;border-radius:var(--r) var(--r) 0 0;padding:18px;animation:slideup .25s cubic-bezier(.34,1.56,.64,1);}
-@keyframes slideup{from{transform:translateY(60px)}to{transform:translateY(0)}}
-.modal-title{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--navy);margin-bottom:12px;}
-.mf{margin-bottom:11px;}
-.mf label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:4px;}
-.mf input,.mf select,.mf textarea{width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:6px;font-size:12.5px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);outline:none;}
-.mf input:focus,.mf select:focus,.mf textarea:focus{border-color:var(--navy-mid);}
-.mf textarea{min-height:65px;resize:vertical;}
-.modal-actions{display:flex;gap:7px;margin-top:4px;}
-.btn-p{flex:1;padding:9px;border:none;border-radius:6px;background:linear-gradient(135deg,var(--navy-mid),var(--navy-lt));color:var(--white);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;}
-.btn-s{padding:9px 14px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--muted);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
-#toast{position:absolute;top:66px;left:10px;right:10px;background:var(--navy);color:var(--white);border-radius:var(--r-sm);padding:11px 14px;font-size:12px;line-height:1.5;z-index:11;display:none;}
-#toast.show{display:block;}
-#toast.success{background:#0d6e5b;}
-#toast.error{background:#9b2c2c;}
-.toast-x{float:right;background:none;border:none;color:rgba(255,255,255,.7);font-size:15px;cursor:pointer;margin-left:7px;line-height:1;}
 </style>
 </head>
 <body>
@@ -147,11 +119,6 @@ body{background:transparent;font-family:'DM Sans',sans-serif;overflow:hidden;}
     </div>
   </div>
 
-  <div class="v-sw">
-    <button class="v-tab active" onclick="switchView('chat')" id="tab-chat">💬 Chat</button>
-    <button class="v-tab" onclick="switchView('menu')" id="tab-menu">⚡ Quick Actions</button>
-  </div>
-
   <div class="view active" id="chat-view">
     <div id="messages"></div>
     <div class="chip-row" id="chip-row"></div>
@@ -163,47 +130,12 @@ body{background:transparent;font-family:'DM Sans',sans-serif;overflow:hidden;}
       </button>
     </div>
   </div>
-
-  <div class="view" id="menu-view">
-    <div class="menu-welcome">
-      <strong>Welcome Traveller! 👋</strong>
-      <p>Choose an action or switch to Chat to talk to Shanaya.</p>
-    </div>
-    <div class="menu-grid">
-      <div class="menu-card" onclick="openAction('get_confirmation')"><div class="menu-icon">📋</div><div class="menu-label">Booking Confirmation</div><div class="menu-desc">View your booking</div></div>
-      <div class="menu-card" onclick="openAction('hold_booking')"><div class="menu-icon">🔒</div><div class="menu-label">Hold a Package</div><div class="menu-desc">Reserve, no payment</div></div>
-      <div class="menu-card" onclick="openAction('cancel_booking')"><div class="menu-icon">❌</div><div class="menu-label">Cancel Booking</div><div class="menu-desc">Check refund</div></div>
-      <div class="menu-card" onclick="openAction('add_ancillary')"><div class="menu-icon">✨</div><div class="menu-label">Add Extras</div><div class="menu-desc">Insurance, upgrades</div></div>
-      <div class="menu-card" onclick="openAction('payment_link')"><div class="menu-icon">💳</div><div class="menu-label">Payment Link</div><div class="menu-desc">Complete booking</div></div>
-      <div class="menu-card" onclick="openAction('custom_request')"><div class="menu-icon">💬</div><div class="menu-label">Custom Request</div><div class="menu-desc">Talk to specialist</div></div>
-    </div>
-  </div>
-
-  <div id="action-modal" onclick="if(event.target===this)closeModal()">
-    <div class="modal-sheet" id="modal-content"></div>
-  </div>
-  <div id="toast"><button class="toast-x" onclick="closeToast()">✕</button><div id="toast-txt"></div></div>
 </div>
 
 <script>
-const API    = 'https://shanaya-bot-umkov.onrender.com';
+const API    = 'https://arya-v1-0-0.onrender.com';
 const AVATAR = API + '/static/Shanaya-avatar.jpg';
-
-/*
- * localStorage keys — persist across tabs AND page navigations
- * SK  = session ID (so same conversation resumes on new tab)
- * HK  = chat history
- * IK  = identity given flag
- * NK  = stored name
- * PK  = stored phone
- *
- * NOTE: We do NOT store whether the widget is open/closed here.
- * The WordPress embed script handles open/closed state.
- * The widget itself always starts closed (invisible) and opens
- * only when the WP launcher button is clicked or postMessage received.
- */
-const SK='shanaya_sid', HK='shanaya_history', IK='shanaya_id';
-const NK='shanaya_name', PK='shanaya_phone';
+const SK='shanaya_sid', HK='shanaya_history', IK='shanaya_id', NK='shanaya_name', PK='shanaya_phone';
 
 function _ls(key){ try{return localStorage.getItem(key);}catch(e){return null;} }
 function _lsSet(key,val){ try{localStorage.setItem(key,val);}catch(e){} }
@@ -212,19 +144,17 @@ function _lsDel(key){ try{localStorage.removeItem(key);}catch(e){} }
 let sessionId     = _ls(SK) || ('web-'+Math.random().toString(36).substr(2,10));
 let identityGiven = _ls(IK) === '1';
 let storedName    = _ls(NK) || null;
-let storedPhone   = _ls(PK) || null;
 let chatHistory   = JSON.parse(_ls(HK)||'[]');
 let isTyping      = false;
 _lsSet(SK, sessionId);
 
-/* ── Init ── */
 window.addEventListener('load', function() {
-  /* Hide internal launcher when loaded inside WP iframe */
   if (window.parent !== window) {
     document.getElementById('Shanaya-launcher').style.display = 'none';
   }
 
-  /* Restore chat history */
+  const msgs = document.getElementById('messages');
+
   if (chatHistory.length > 0) {
     chatHistory.forEach(function(m){
       if (m.role === 'bot') _renderBot(m.text);
@@ -233,12 +163,19 @@ window.addEventListener('load', function() {
     if (identityGiven) {
       document.getElementById('chat-input').placeholder = 'Ask about trips, flights, visas…';
     }
+    /*
+     * FIX: after restoring history (e.g. after a link click navigated
+     * the page and the widget reloaded), scroll to the BOTTOM so the
+     * conversation resumes where it left off, not at the very top.
+     */
+    requestAnimationFrame(function() {
+      msgs.scrollTop = msgs.scrollHeight;
+    });
   } else {
-    /* Check if we already know who this user is from localStorage */
     if (identityGiven && storedName) {
       setTimeout(function(){
         var first = storedName.split(' ')[0];
-        appendBot('Welcome back, ' + first + '! 🙏 Great to have you here again.\n\nWhat trip are we planning today?');
+        appendBot('Welcome back, ' + first + '! 🙏 Great to have you here again.\\n\\nWhat trip are we planning today?');
         document.getElementById('chat-input').placeholder = 'Ask about trips, flights, visas…';
         setChips(['All trips 🌍','Honeymoon 💑','Cheapest flights ✈️','Talk to agent 📞']);
       }, 400);
@@ -247,11 +184,9 @@ window.addEventListener('load', function() {
     }
   }
 
-  /* Open if inside WP iframe (WP parent controls size) */
   if (window.parent !== window) openPanel();
 });
 
-/* postMessage from WP parent launcher button */
 window.addEventListener('message', function(e) {
   if (!e.data) return;
   if (e.data.action === 'open_shanaya') openPanel();
@@ -259,15 +194,15 @@ window.addEventListener('message', function(e) {
 
 function showWelcome() {
   appendBot(
-    'Hi there! 👋 Please share your name and phone number so our team can assist you better.\n\n' +
-    'Just type them together — for example:\n' +
-    '**Rahul Sharma 9876543210**\n\n' +
-    'No commas or special format needed!'
+    'Hi there! 👋 Before we can continue, I need TWO things from you, sent together in ONE message:\\n\\n' +
+    '1️⃣ Your full name\\n' +
+    '2️⃣ Your phone number — exactly 10 digits, numbers only (no +91, no spaces, no dashes)\\n\\n' +
+    '**Example — copy this format exactly:**\\n' +
+    'Rahul Sharma 9876543210'
   );
-  document.getElementById('chat-input').placeholder = 'Your name and phone number';
+  document.getElementById('chat-input').placeholder = 'Your name and 10-digit number';
 }
 
-/* ── Open / Minimise / Close ── */
 function openPanel() {
   document.getElementById('Shanaya-widget').classList.add('open');
   document.getElementById('Shanaya-launcher').style.display = 'none';
@@ -278,7 +213,6 @@ function openPanel() {
 }
 
 function minimiseWidget() {
-  /* — button: hide panel, show launcher, KEEP all history */
   document.getElementById('Shanaya-widget').classList.remove('open');
   document.getElementById('Shanaya-launcher').style.display = 'flex';
   if (window.parent !== window) {
@@ -287,21 +221,14 @@ function minimiseWidget() {
 }
 
 function closeAndClear() {
-  /* ✕ button: hide panel, wipe chat history, reset session */
-  /* Does NOT wipe identity — user doesn't need to re-enter name/phone */
   document.getElementById('Shanaya-widget').classList.remove('open');
   document.getElementById('Shanaya-launcher').style.display = 'flex';
-
-  /* Clear chat history and session but KEEP identity */
   _lsDel(SK); _lsDel(HK);
   sessionId    = 'web-' + Math.random().toString(36).substr(2,10);
   chatHistory  = [];
   _lsSet(SK, sessionId);
-
   document.getElementById('messages').innerHTML = '';
   document.getElementById('chip-row').innerHTML = '';
-
-  /* Since identity is kept, go straight to welcome-back */
   if (identityGiven && storedName) {
     document.getElementById('chat-input').placeholder = 'Ask about trips, flights, visas…';
     setTimeout(function(){
@@ -310,23 +237,14 @@ function closeAndClear() {
       setChips(['All trips 🌍','Honeymoon 💑','Cheapest flights ✈️','Talk to agent 📞']);
     }, 300);
   } else {
-    document.getElementById('chat-input').placeholder = 'Your name and phone number';
+    document.getElementById('chat-input').placeholder = 'Your name and 10-digit number';
     setTimeout(showWelcome, 300);
   }
-
   if (window.parent !== window) {
     window.parent.postMessage({ action: 'close_shanaya' }, '*');
   }
 }
 
-function switchView(v) {
-  document.querySelectorAll('.view').forEach(function(el){el.classList.remove('active');});
-  document.querySelectorAll('.v-tab').forEach(function(el){el.classList.remove('active');});
-  document.getElementById(v+'-view').classList.add('active');
-  document.getElementById('tab-'+v).classList.add('active');
-}
-
-/* ── Chat ── */
 async function sendMessage() {
   var input = document.getElementById('chat-input');
   var text  = input.value.trim();
@@ -334,8 +252,7 @@ async function sendMessage() {
   input.value = ''; clearChips(); appendUser(text); showTyping();
   try {
     var res = await fetch(API+'/widget/chat', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({message: text, session_id: sessionId})
     });
     if (!res.ok) throw new Error('HTTP '+res.status);
@@ -346,14 +263,12 @@ async function sendMessage() {
     if (data.identity_given && !identityGiven) {
       identityGiven = true;
       _lsSet(IK, '1');
-      /* Store name and phone from server response */
       if (data.extracted_data && data.extracted_data.contact_name) {
         storedName = data.extracted_data.contact_name;
         _lsSet(NK, storedName);
       }
       if (data.extracted_data && data.extracted_data.contact_phone) {
-        storedPhone = data.extracted_data.contact_phone;
-        _lsSet(PK, storedPhone);
+        _lsSet(PK, data.extracted_data.contact_phone);
       }
       document.getElementById('chat-input').placeholder = 'Ask about trips, flights, visas…';
     }
@@ -364,13 +279,12 @@ async function sendMessage() {
     }
   } catch(err) {
     hideTyping();
-    appendBot('I\'m having a brief connection issue. 🙏\nPlease try again or call **+91 8010700700**.');
+    appendBot('I\\'m having a brief connection issue. 🙏\\nPlease try again or call **+91 8010700700**.');
   }
 }
 
 function sendChip(l) { document.getElementById('chat-input').value = l; sendMessage(); }
 
-/* ── Message rendering ── */
 function _save(role, text) {
   chatHistory.push({role:role, text:text});
   if (chatHistory.length > 40) chatHistory = chatHistory.slice(-40);
@@ -381,7 +295,7 @@ function _botRow(html) {
   var now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
   var row = document.createElement('div'); row.className = 'msg-row bot';
   row.innerHTML =
-    '<div class="msg-av"><img src="'+AVATAR+'" onload="this.style.display=\'block\'" onerror="this.style.display=\'none\'" alt="S"><span style="font-family:serif;font-size:11px;font-weight:600;color:#fff">S</span></div>'+
+    '<div class="msg-av"><img src="'+AVATAR+'" onload="this.style.display=\\'block\\'" onerror="this.style.display=\\'none\\'" alt="S"><span style="font-family:serif;font-size:11px;font-weight:600;color:#fff">S</span></div>'+
     '<div><div class="msg-bubble">'+html+'</div><div class="msg-time">'+now+'</div></div>';
   return row;
 }
@@ -409,7 +323,7 @@ function showTyping() {
   isTyping=true; document.getElementById('send-btn').disabled=true;
   var msgs=document.getElementById('messages');
   var row=document.createElement('div'); row.className='msg-row bot'; row.id='typing-row';
-  row.innerHTML='<div class="msg-av"><img src="'+AVATAR+'" onload="this.style.display=\'block\'" onerror="this.style.display=\'none\'" alt="S"><span style="font-size:11px;font-weight:600;color:#fff">S</span></div><div><div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div></div>';
+  row.innerHTML='<div class="msg-av"><img src="'+AVATAR+'" onload="this.style.display=\\'block\\'" onerror="this.style.display=\\'none\\'" alt="S"><span style="font-size:11px;font-weight:600;color:#fff">S</span></div><div><div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div></div>';
   msgs.appendChild(row); msgs.scrollTop=msgs.scrollHeight;
 }
 function hideTyping(){var r=document.getElementById('typing-row');if(r)r.remove();}
@@ -423,59 +337,13 @@ function setChips(labels){
 }
 function clearChips(){document.getElementById('chip-row').innerHTML='';}
 
-/* ── Actions ── */
-var AF={
-  get_confirmation:{title:'📋 Get Booking Confirmation',fields:[{n:'booking_id',l:'Booking Reference (optional)',t:'text',p:'Leave blank to auto-detect'}]},
-  hold_booking:{title:'🔒 Hold a Package',fields:[{n:'destination',l:'Destination',t:'text',p:'e.g. Bali, Dubai'},{n:'travel_dates',l:'Travel Dates',t:'text',p:'e.g. July 15–25'},{n:'duration_hours',l:'Hold Duration',t:'select',o:[['24','24 hours'],['48','48 hours'],['72','72 hours']]}]},
-  cancel_booking:{title:'❌ Cancel Booking',fields:[{n:'booking_id',l:'Booking Reference',t:'text',p:'e.g. BK-001'},{n:'reason',l:'Reason (optional)',t:'text',p:''}]},
-  add_ancillary:{title:'✨ Add Extras',fields:[{n:'booking_id',l:'Booking Reference',t:'text',p:'e.g. BK-001'},{n:'type',l:'Type',t:'select',o:[['travel_insurance','Travel Insurance — ₹2,500'],['visa_assistance','Visa Assistance — ₹1,500'],['hotel_upgrade','Hotel Upgrade — ₹5,000'],['airport_transfer','Airport Transfer — ₹1,200'],['activity_package','Activity Package — ₹3,500'],['meal_plan','Meal Plan — ₹2,000'],['travel_sim','International SIM — ₹800'],['forex_card','Forex Card — ₹500']]}]},
-  payment_link:{title:'💳 Payment Link',fields:[{n:'booking_id',l:'Booking Reference',t:'text',p:'e.g. BK-001'}]},
-  custom_request:{title:'💬 Custom Request',fields:[{n:'request_text',l:'Describe your request',t:'textarea',p:'e.g. Group of 15 people, need Europe tour…'}]},
-};
-function openAction(key){
-  var form=AF[key]; if(!form) return;
-  document.getElementById('modal-content').innerHTML=
-    '<div class="modal-title">'+form.title+'</div>'+
-    form.fields.map(function(f){
-      if(f.t==='select') return '<div class="mf"><label>'+f.l+'</label><select name="'+f.n+'">'+f.o.map(function(o){return'<option value="'+o[0]+'">'+o[1]+'</option>';}).join('')+'</select></div>';
-      if(f.t==='textarea') return '<div class="mf"><label>'+f.l+'</label><textarea name="'+f.n+'" placeholder="'+f.p+'"></textarea></div>';
-      return '<div class="mf"><label>'+f.l+'</label><input type="text" name="'+f.n+'" placeholder="'+f.p+'"></div>';
-    }).join('')+
-    '<div class="modal-actions"><button class="btn-s" onclick="closeModal()">Cancel</button><button class="btn-p" onclick="submitAction(\''+key+'\')">Submit</button></div>';
-  document.getElementById('action-modal').classList.add('show');
-}
-async function submitAction(key){
-  var details={};
-  document.getElementById('modal-content').querySelectorAll('input,select,textarea').forEach(function(inp){
-    if(inp.value.trim()) details[inp.name]=inp.name==='duration_hours'?parseInt(inp.value):inp.value.trim();
-  });
-  closeModal(); showToast('⏳ Processing…','');
-  try{
-    var body={action:key,session_id:sessionId,details:details};
-    if(details.booking_id){body.booking_id=details.booking_id;delete details.booking_id;}
-    var r=await fetch(API+'/widget/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    var data=await r.json();
-    showToast(data.message||'Done.',data.status==='success'?'success':'error');
-    appendBot(data.message||'Done.'); switchView('chat');
-  }catch(e){showToast('Server error. Please try again.','error');}
-}
-function closeModal(){document.getElementById('action-modal').classList.remove('show');}
-function showToast(msg,type){
-  var t=document.getElementById('toast');
-  document.getElementById('toast-txt').innerHTML=esc(msg).replace(/\n/g,'<br>');
-  t.className='show '+(type||'');
-  if(type) setTimeout(closeToast,5500);
-}
-function closeToast(){document.getElementById('toast').classList.remove('show');}
-
-/* ── Utils ── */
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function fmt(text){
   return esc(text)
-    .replace(/\n/g,'<br>')
-    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
-    .replace(/(^|<br>|\s)(https?:\/\/[^\s<"]+)/g,'$1<a href="$2" target="_blank" rel="noopener">$2</a>');
+    .replace(/\\n/g,'<br>')
+    .replace(/\\*\\*(.*?)\\*\\*/g,'<strong>$1</strong>')
+    .replace(/\\[([^\\]]+)\\]\\((https?:\\/\\/[^)]+)\\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+    .replace(/(^|<br>|\\s)(https?:\\/\\/[^\\s<"]+)/g,'$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>');
 }
 </script>
 </body>
