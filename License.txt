@@ -1,0 +1,440 @@
+CUSTOM PROPRIETARY SOFTWARE LICENSE
+
+Copyright (c) [YEAR] [YOUR FULL NAME] ("Licensor")
+
+All rights reserved.
+
+---
+
+1. DEFINITIONS
+
+"Software" means the source code, object code, documentation, assets,
+configuration files, and all associated materials covered by this
+License, in whole or in part, including any modifications, updates,
+or derivative works thereof.
+
+"Licensee" means any individual, company, organization, or entity
+granted rights under this License by the Licensor.
+
+"Use" means running, operating, deploying, or otherwise employing the
+Software for its intended functional purpose.
+
+---
+
+2. GRANT OF LICENSE
+
+Subject to the terms of this License, Licensor grants Licensee a
+limited, non-exclusive, non-transferable, revocable license to:
+
+  (a) Use the Software solely for Licensee's own internal business
+      operations; and
+
+  (b) Access and interact with the Software as deployed or provided
+      by the Licensor (including via hosted services, APIs, or
+      compiled/deployed instances), where applicable.
+
+This License does not grant, and Licensee shall not acquire, any
+ownership interest in the Software. All right, title, and interest in
+and to the Software, including all intellectual property rights
+therein, remain exclusively with the Licensor.
+
+For the avoidance of doubt, this License governs a hosted service
+arrangement: the Software is made available to Licensee as a running,
+deployed service (including via web widget, API, or equivalent
+interface) controlled and operated by the Licensor. This is not a
+traditional software license involving delivery of source code,
+binaries, or installable packages to Licensee, except where Section 5
+is expressly varied in writing by the Licensor.
+
+---
+
+3. RESTRICTIONS
+
+Licensee shall NOT, without the prior express written consent of the
+Licensor:
+
+  (a) Copy, reproduce, distribute, publish, sublicense, sell, rent,
+      lease, or otherwise share the Software, in whole or in part,
+      with any third party;
+
+  (b) Modify, adapt, translate, reverse-engineer, decompile,
+      disassemble, or create derivative works based on the Software;
+
+  (c) Remove, alter, or obscure any copyright, trademark, or
+      proprietary notices contained in the Software;
+
+  (d) Transfer, assign, or delegate any rights granted under this
+      License to any other individual or entity;
+
+  (e) Use the Software to develop a competing product or service;
+
+  (f) Grant access to the Software's underlying source code,
+      repository, hosting credentials, or infrastructure to any
+      third party.
+
+Any request by Licensee to modify, extend, redistribute, or otherwise
+act outside the scope of Section 2 must be submitted to the Licensor
+in writing. The Licensor retains sole discretion to approve or deny
+such requests.
+
+---
+
+4. OWNERSHIP AND INTELLECTUAL PROPERTY
+
+The Software is and shall remain the exclusive intellectual property
+of the Licensor. Nothing in this License shall be construed as a
+transfer or assignment of ownership, copyright, or any other
+intellectual property right to the Licensee, whether by implication,
+estoppel, or otherwise.
+
+Any feedback, suggestions, or feature requests provided by Licensee
+regarding the Software may be freely used, implemented, and owned by
+the Licensor without obligation or compensation to Licensee.
+
+Nothing in this License, nor any request, specification, or
+description of desired functionality provided by Licensee to
+Licensor, shall be construed as an assignment of ownership, a
+transfer of copyright, or a "work made for hire" arrangement. The
+Software was independently conceived, designed, and developed by the
+Licensor using the Licensor's own resources, accounts, and
+infrastructure, and is licensed to Licensee strictly on the terms set
+out in this License. Licensee agrees not to assert, in any forum, that
+its request for or description of the Software's intended
+functionality gives rise to any ownership or co-ownership claim.
+
+---
+
+5. NO SOURCE CODE DELIVERY
+
+Unless explicitly agreed to in writing by the Licensor, this License
+does not entitle Licensee to receive, access, or possess the
+underlying source code, development repository, or infrastructure
+credentials associated with the Software. The Software may be
+provided and Used solely through interfaces, deployments, or hosted
+instances made available by the Licensor.
+
+---
+
+6. MODIFICATIONS AND UPDATES
+
+All modifications, updates, bug fixes, and improvements to the
+Software shall be performed exclusively by the Licensor, or by a
+third party expressly authorized in writing by the Licensor. Licensee
+shall not attempt to modify the Software independently or engage any
+third party to do so on Licensee's behalf.
+
+---
+
+7. TERM AND TERMINATION
+
+This License is effective until terminated as set out below.
+
+  (a) Termination for Breach. Either party may terminate this License
+      upon written notice if the other party materially breaches any
+      term of this License and fails to cure such breach within
+      fifteen (15) days of receiving written notice describing the
+      breach in reasonable detail.
+
+  (b) Termination for Serious Cause. Notwithstanding Section 7(a), the
+      Licensor may terminate this License immediately, without an
+      opportunity to cure, if Licensee: (i) violates Section 3
+      (Restrictions); (ii) violates Section 17 (Publicity); (iii)
+      uses the Software for any unlawful purpose; or (iv) becomes
+      insolvent, enters bankruptcy or equivalent proceedings, or
+      ceases to operate as a going concern.
+
+  (c) Effect of Termination. Upon termination for any reason, Licensee
+      shall immediately cease all Use of the Software and, if
+      applicable, destroy or return any materials provided under this
+      License. Termination shall not relieve Licensee of any
+      obligation to pay amounts accrued prior to termination, if
+      applicable.
+
+  (d) Transition Assistance. Where this License is terminated other
+      than under Section 7(b), the Licensor will, at its discretion
+      and for a reasonable period not exceeding thirty (30) days,
+      provide reasonable cooperation to assist Licensee in winding
+      down its use of the Software in an orderly manner.
+
+Sections 3, 4, 5, 8, 9, 11, 12, 14, 17, and 20 shall survive
+termination of this License.
+
+---
+
+8. NO WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS," WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+NON-INFRINGEMENT. IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY
+CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM, OUT OF, OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+9. GOVERNING LAW
+
+This License shall be governed by and construed in accordance with
+the laws of [YOUR COUNTRY/STATE], without regard to its conflict of
+law principles. Any disputes arising under this License shall be
+subject to the exclusive jurisdiction of the courts located in
+[YOUR CITY/STATE].
+
+---
+
+10. ENTIRE AGREEMENT
+
+This License constitutes the entire agreement between Licensor and
+Licensee regarding the Software and supersedes any prior or
+contemporaneous understandings, whether written or oral, regarding
+its subject matter. Any amendment to this License must be made in
+writing and signed by both parties.
+
+---
+
+11. LIMITATION OF LIABILITY
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL
+THE LICENSOR BE LIABLE TO THE LICENSEE OR ANY THIRD PARTY FOR ANY
+INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE
+DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, REVENUE, DATA,
+BUSINESS OPPORTUNITY, OR GOODWILL, ARISING OUT OF OR RELATED TO THIS
+LICENSE OR THE USE OR INABILITY TO USE THE SOFTWARE, REGARDLESS OF THE
+THEORY OF LIABILITY (WHETHER IN CONTRACT, TORT, NEGLIGENCE, STRICT
+LIABILITY, OR OTHERWISE), EVEN IF THE LICENSOR HAS BEEN ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGES.
+
+IN NO EVENT SHALL THE LICENSOR'S TOTAL AGGREGATE LIABILITY ARISING OUT
+OF OR RELATED TO THIS LICENSE EXCEED THE TOTAL AMOUNT, IF ANY, PAID BY
+LICENSEE TO LICENSOR FOR USE OF THE SOFTWARE IN THE TWELVE (12) MONTHS
+PRECEDING THE EVENT GIVING RISE TO THE CLAIM. WHERE NO PAYMENT HAS BEEN
+MADE, THE LICENSOR'S TOTAL LIABILITY SHALL NOT EXCEED ZERO.
+
+---
+
+12. INDEMNIFICATION
+
+Licensee agrees to defend, indemnify, and hold harmless the Licensor,
+and its successors and assigns, from and against any and all claims,
+liabilities, damages, losses, costs, and expenses (including
+reasonable legal fees) arising out of or related to:
+
+  (a) Licensee's use or misuse of the Software;
+
+  (b) Licensee's breach of any term of this License;
+
+  (c) Licensee's violation of any applicable law or regulation in
+      connection with its use of the Software;
+
+  (d) Any claim brought by a third party arising from Licensee's
+      deployment, integration, or operation of the Software,
+      including claims relating to data collected, stored, or
+      processed through the Software;
+
+  (e) Any unauthorized access, distribution, or disclosure of the
+      Software caused by Licensee's acts or omissions.
+
+This indemnification obligation shall survive termination of this
+License.
+
+---
+
+13. COMPLIANCE
+
+Licensee shall be solely responsible for ensuring that its use of the
+Software complies with all applicable laws, regulations, and industry
+standards, including but not limited to data protection, consumer
+protection, telecommunications, and electronic communications laws in
+every jurisdiction in which Licensee operates or deploys the
+Software.
+
+Licensor makes no representation that the Software satisfies the
+regulatory requirements of any specific jurisdiction or industry, and
+it is Licensee's obligation to obtain any necessary consents,
+approvals, or registrations required for its intended use.
+
+---
+
+14. DATA SECURITY
+
+Where the Software collects, processes, transmits, or stores any
+personal, customer, or business data on Licensee's behalf, Licensee
+acknowledges and agrees that:
+
+  (a) Licensee is solely responsible for determining the legal basis
+      for collecting such data and for obtaining any necessary
+      consents from data subjects;
+
+  (b) Licensor shall implement reasonable technical safeguards to
+      protect data processed through the Software, but does not
+      guarantee against unauthorized access, breach, or loss;
+
+  (c) Licensee shall promptly notify the Licensor of any suspected or
+      actual data breach relating to data processed through the
+      Software;
+
+  (d) Any obligations relating to specific data protection frameworks
+      (such as GDPR, DPDP Act, CCPA, or equivalent) shall be governed
+      by a separate data processing agreement, if applicable,
+      executed by both parties.
+
+Nothing in this Section shall be construed as a guarantee of
+uninterrupted, error-free, or completely secure operation of the
+Software.
+
+Where the Software processes personal data of Licensee's customers,
+employees, or other individuals in a manner that triggers obligations
+under applicable data protection law (including but not limited to
+the GDPR, the Digital Personal Data Protection Act, or the CCPA), the
+parties agree to execute a separate Data Processing Agreement
+governing the roles, responsibilities, and safeguards applicable to
+such processing prior to any such processing taking place at scale.
+This License alone does not constitute a Data Processing Agreement.
+
+---
+
+15. CONFIDENTIALITY
+
+Each party agrees to hold in confidence, and not to disclose to any
+third party, any non-public, proprietary, or confidential information
+disclosed by the other party in connection with this License,
+including but not limited to the Software's source code, architecture,
+prompts, business logic, pricing, customer data, and any technical or
+business information exchanged between the parties ("Confidential
+Information").
+
+Confidential Information does not include information that: (a) is or
+becomes publicly available through no fault of the receiving party;
+(b) was already known to the receiving party prior to disclosure; (c)
+is independently developed without use of the disclosing party's
+Confidential Information; or (d) is required to be disclosed by law or
+court order, provided the disclosing party is given prompt notice
+where legally permissible.
+
+Each party shall use the other party's Confidential Information solely
+for purposes of performing its obligations or exercising its rights
+under this License, and shall protect it using at least the same
+degree of care it uses for its own confidential information, and no
+less than a reasonable degree of care.
+
+This Section shall survive termination of this License for a period
+of three (3) years, except with respect to trade secrets, which shall
+remain confidential for as long as they qualify as trade secrets under
+applicable law.
+
+---
+
+16. NOTICES
+
+Any notice, request, consent, or other communication required or
+permitted under this License shall be in writing and shall be deemed
+given when:
+
+  (a) delivered personally;
+
+  (b) sent by email to the last known email address of the receiving
+      party, with confirmation of transmission; or
+
+  (c) sent by registered or certified mail, postage prepaid, to the
+      last known address of the receiving party.
+
+Notices to the Licensor shall be sent to the contact details
+specified at the end of this License. Licensee shall promptly notify
+Licensor in writing of any change to Licensee's contact details.
+
+---
+
+17. ELECTRONIC ACCEPTANCE
+
+This License may be accepted through electronic means, including but
+not limited to email confirmation, click-through acceptance, digital
+signature, or continued use of the Software following receipt of this
+License. Such electronic acceptance shall have the same legal force
+and effect as a handwritten signature and shall be binding on the
+Licensee.
+
+Licensee's act of accessing, deploying, integrating, or otherwise
+using the Software following delivery of this License shall
+constitute conclusive acceptance of all terms herein, whether or not
+a signed copy is returned to the Licensor.
+
+---
+
+18. PUBLICITY
+
+Licensee shall not, without the prior express written consent of the
+Licensor, publicize, advertise, announce, or otherwise disclose to any
+third party or to the public:
+
+  (a) the existence of this License or the business relationship
+      between Licensee and Licensor;
+
+  (b) the fact that Licensee uses, deploys, or has commissioned the
+      Software;
+
+  (c) any screenshots, descriptions, demonstrations, or other
+      representations of the Software, in whole or in part, in any
+      marketing, promotional, investor, or public-facing material;
+
+  (d) the Licensor's name, likeness, or any identifying information in
+      connection with the Software, in any press release, case study,
+      social media post, website, or other public medium.
+
+Any request for publicity permission must be submitted to the
+Licensor in writing, and the Licensor retains sole discretion to
+grant, deny, or condition such permission.
+
+---
+
+19. FORCE MAJEURE
+
+The Licensor shall not be liable for any failure or delay in
+performance under this License, nor for any damages, losses, or
+consequences arising from the use of the Software, to the extent
+caused by circumstances beyond the Licensor's reasonable control,
+including but not limited to acts of God, natural disasters, war,
+terrorism, civil unrest, government action, pandemic, internet or
+telecommunications failures, third-party service outages, or criminal
+acts committed by any party (including but not limited to hacking,
+fraud, unauthorized access, or misuse of the Software by any person).
+
+For the avoidance of doubt, the Licensor shall bear no liability
+whatsoever for any harm, loss, or damage arising from criminal acts
+committed by third parties through, against, or using the Software,
+including but not limited to unauthorized intrusion, data theft, or
+fraudulent use.
+
+---
+
+20. SUPPORT AND MAINTENANCE
+
+Unless otherwise agreed in a separate written agreement, the Licensor
+is under no obligation to provide support, maintenance, updates, bug
+fixes, or enhancements to the Software.
+
+Where the Licensor elects, at its sole discretion, to provide support
+or maintenance services, such services:
+
+  (a) may be modified, suspended, or discontinued at any time without
+      notice or liability;
+
+  (b) do not constitute an ongoing obligation or entitlement for
+      Licensee in any future period;
+
+  (c) shall not be construed as expanding the scope of rights granted
+      under Section 2 of this License.
+
+Any request for dedicated support or maintenance arrangements must be
+made in writing and may be subject to separate terms, including but
+not limited to additional fees, as agreed between the parties.
+
+---
+
+By using, accessing, or deploying the Software, Licensee acknowledges
+that it has read, understood, and agrees to be bound by the terms of
+this License.
+
+[YOUR FULL NAME]
+[YOUR EMAIL / CONTACT]
+[DATE]
