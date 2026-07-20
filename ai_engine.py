@@ -1,21 +1,26 @@
 """
 AI Engine — Shanaya, MKOV Travel Assistant
+Uses the NEW `google-genai` SDK (google.genai), NOT the old
+deprecated `google-generativeai` package. Import path is different:
+    from google import genai
+    from google.genai import types
+
 - STRICT 10-digit phone validation only
-- Partial identity handling: if only name OR only phone given, ask for
-  the specific missing piece and remember what was already provided
+- Partial identity handling
 - Visit counter for returning users
 - Google Flights + internal portal fallback
-- Never invents info: unknown destinations/packages → redirect to agent
+- Never invents info
 """
 
 import re
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from memory import get_history, save_message
 from database import get_db
 from config import GEMINI_API_KEY, MODEL, TEMPERATURE, MAX_TOKENS, SYSTEM_PROMPT, OPERATOR_PHONE
 
-print(f"✓ Shanaya AI Engine — {MODEL}")
-genai.configure(api_key=GEMINI_API_KEY)
+print(f"✓ Shanaya AI Engine — {MODEL} (google-genai SDK)")
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 try:
     from google_flights import detect_flight_query, search_google_flights, format_for_shanaya
@@ -112,17 +117,9 @@ def clear_pending(session_id: str):
 # ── STRICT identity extraction — phone MUST be exactly 10 digits ─────────────
 
 def extract_phone(text: str):
-    """
-    Find a phone number in the text. Only accepts EXACTLY 10 digits
-    (after stripping spaces/dashes, and after stripping a leading
-    country code like +91 or 91 if present). Any other digit length
-    is rejected — returns None.
-    """
-    # Find all digit runs (allowing spaces/dashes within a run)
     candidates = re.findall(r'(\+?\d[\d\s\-]{6,16}\d)', text)
     for raw in candidates:
         cleaned = re.sub(r'[\s\-]', '', raw)
-        # Strip leading + and country code 91 if present
         digits = cleaned.lstrip('+')
         if digits.startswith('91') and len(digits) == 12:
             digits = digits[2:]
@@ -131,10 +128,7 @@ def extract_phone(text: str):
     return None
 
 
-def extract_name(text: str, phone_raw_matches: list = None):
-    """
-    Extract a plausible name from text after removing any phone-like digit runs.
-    """
+def extract_name(text: str):
     cleaned = re.sub(r'(\+?\d[\d\s\-]{6,16}\d)', ' ', text)
     cleaned = re.sub(r'[,\.\-_]+', ' ', cleaned).strip()
     cleaned = re.sub(r'\s+', ' ', cleaned).strip()
@@ -159,6 +153,8 @@ IDENTITY_PROMPT = (
 )
 
 
+# ── Main chat ─────────────────────────────────────────────────────────────────
+
 def chat(session_id: str, user_message: str) -> dict:
     print(f"[CHAT] {session_id[:12]} | {user_message[:60]}")
 
@@ -173,7 +169,6 @@ def chat(session_id: str, user_message: str) -> dict:
         final_name  = name_found  or pending["name"]
         final_phone = phone_found or pending["phone"]
 
-        # ── Both present — complete the identity gate ─────────────────────────
         if final_name and final_phone:
             clear_pending(session_id)
             info  = create_or_update_lead(session_id, final_name, final_phone)
@@ -201,7 +196,6 @@ def chat(session_id: str, user_message: str) -> dict:
                 "missing_fields": [], "is_complete": False, "identity_given": True,
             }
 
-        # ── Only phone given so far — ask specifically for name ───────────────
         if final_phone and not final_name:
             save_pending(session_id, phone=final_phone)
             save_message(session_id, "user", user_message)
@@ -217,7 +211,6 @@ def chat(session_id: str, user_message: str) -> dict:
                 "is_complete": False, "identity_given": False,
             }
 
-        # ── Only name given so far — ask specifically for phone ───────────────
         if final_name and not final_phone:
             save_pending(session_id, name=final_name)
             save_message(session_id, "user", user_message)
@@ -235,7 +228,6 @@ def chat(session_id: str, user_message: str) -> dict:
                 "is_complete": False, "identity_given": False,
             }
 
-        # ── Neither found — full explicit instructions ─────────────────────────
         save_message(session_id, "user", user_message)
         save_message(session_id, "assistant", IDENTITY_PROMPT)
         return {
@@ -244,24 +236,30 @@ def chat(session_id: str, user_message: str) -> dict:
             "is_complete": False, "identity_given": False,
         }
 
-    # ── Identity confirmed — Gemini chat ──────────────────────────────────────
+    # ── Identity confirmed — Gemini chat via NEW google-genai SDK ─────────────
     save_message(session_id, "user", user_message)
     history  = get_history(session_id)
+
+    # Build history as list of types.Content objects
     contents = []
     for msg in history[:-1]:
         role = "model" if msg["role"] == "assistant" else "user"
-        contents.append({"role": role, "parts": [{"text": msg["content"]}]})
+        contents.append(types.Content(role=role, parts=[types.Part(text=msg["content"])]))
 
     flight_ctx = get_flight_context(user_message)
     final_msg  = f"{flight_ctx}\n\nUser: {user_message}" if flight_ctx else user_message
 
     try:
-        model        = genai.GenerativeModel(model_name=MODEL, system_instruction=SYSTEM_PROMPT)
-        chat_session = model.start_chat(history=contents)
-        response     = chat_session.send_message(
-            final_msg,
-            generation_config={"temperature": TEMPERATURE, "max_output_tokens": MAX_TOKENS}
+        chat_session = client.chats.create(
+            model=MODEL,
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+                temperature=TEMPERATURE,
+                max_output_tokens=MAX_TOKENS,
+            ),
+            history=contents,
         )
+        response = chat_session.send_message(final_msg)
         reply = response.text.strip() if response.text else "Could you repeat that? 🙏"
         print(f"[CHAT] ✓ {reply[:80]}")
     except Exception as e:
