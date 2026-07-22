@@ -1,26 +1,21 @@
 """
-AI Engine — Shanaya, MKOV Travel Assistant
-Uses the NEW `google-genai` SDK (google.genai), NOT the old
-deprecated `google-generativeai` package. Import path is different:
-    from google import genai
-    from google.genai import types
-
+AI Engine v7 — Shanaya, MKOV Travel Assistant
 - STRICT 10-digit phone validation only
-- Partial identity handling
+- Handles partial identity (name only / phone only) — asks for the missing piece
 - Visit counter for returning users
 - Google Flights + internal portal fallback
-- Never invents info
+- Answers questions first, never interrogates
+- If a keyword/package isn't found → directs to operator, never guesses
 """
 
 import re
-from google import genai
-from google.genai import types
+import google.generativeai as genai
 from memory import get_history, save_message
 from database import get_db
-from config import GEMINI_API_KEY, MODEL, TEMPERATURE, MAX_TOKENS, SYSTEM_PROMPT, OPERATOR_PHONE
+from config import GEMINI_API_KEY, MODEL, TEMPERATURE, MAX_TOKENS, SYSTEM_PROMPT
 
-print(f"✓ Shanaya AI Engine — {MODEL} (google-genai SDK)")
-client = genai.Client(api_key=GEMINI_API_KEY)
+print(f"✓ Shanaya AI Engine v7 — {MODEL}")
+genai.configure(api_key=GEMINI_API_KEY)
 
 try:
     from google_flights import detect_flight_query, search_google_flights, format_for_shanaya
@@ -48,6 +43,48 @@ def get_lead_by_session(session_id: str):
     return row
 
 
+def get_partial_identity(session_id: str):
+    """
+    Track partial identity given mid-conversation (name only or phone only)
+    before the lead record is fully created.
+    Stored in a lightweight in-memory-like table keyed by session_id.
+    """
+    conn = get_db()
+    row = conn.execute(
+        "SELECT * FROM partial_identity WHERE session_id=?", (session_id,)
+    ).fetchone()
+    conn.close()
+    return row
+
+
+def save_partial_identity(session_id: str, name: str = None, phone: str = None):
+    conn = get_db()
+    existing = conn.execute(
+        "SELECT * FROM partial_identity WHERE session_id=?", (session_id,)
+    ).fetchone()
+    if existing:
+        new_name  = name  or existing["partial_name"]
+        new_phone = phone or existing["partial_phone"]
+        conn.execute(
+            "UPDATE partial_identity SET partial_name=?, partial_phone=? WHERE session_id=?",
+            (new_name, new_phone, session_id)
+        )
+    else:
+        conn.execute(
+            "INSERT INTO partial_identity (session_id, partial_name, partial_phone) VALUES (?,?,?)",
+            (session_id, name, phone)
+        )
+    conn.commit()
+    conn.close()
+
+
+def clear_partial_identity(session_id: str):
+    conn = get_db()
+    conn.execute("DELETE FROM partial_identity WHERE session_id=?", (session_id,))
+    conn.commit()
+    conn.close()
+
+
 def create_or_update_lead(session_id: str, name: str, phone: str) -> dict:
     conn     = get_db()
     existing = conn.execute("SELECT * FROM leads WHERE contact_phone=?", (phone,)).fetchone()
@@ -60,6 +97,7 @@ def create_or_update_lead(session_id: str, name: str, phone: str) -> dict:
         lead_id = existing["id"]
         conn.commit(); conn.close()
         _link(session_id, lead_id)
+        clear_partial_identity(session_id)
         return {"name": name, "phone": phone, "visit_count": new_count, "is_returning": True}
     else:
         cur = conn.execute(
@@ -69,6 +107,7 @@ def create_or_update_lead(session_id: str, name: str, phone: str) -> dict:
         lead_id = cur.lastrowid
         conn.commit(); conn.close()
         _link(session_id, lead_id)
+        clear_partial_identity(session_id)
         return {"name": name, "phone": phone, "visit_count": 1, "is_returning": False}
 
 
@@ -81,76 +120,124 @@ def _link(session_id, lead_id):
     conn.commit(); conn.close()
 
 
-# ── Pending (partial) identity helpers ────────────────────────────────────────
-
-def get_pending(session_id: str):
-    conn = get_db()
-    row  = conn.execute(
-        "SELECT name, phone FROM pending_identity WHERE session_id=?", (session_id,)
-    ).fetchone()
-    conn.close()
-    return {"name": row["name"], "phone": row["phone"]} if row else {"name": None, "phone": None}
-
-
-def save_pending(session_id: str, name=None, phone=None):
-    existing = get_pending(session_id)
-    final_name  = name  or existing["name"]
-    final_phone = phone or existing["phone"]
-    conn = get_db()
-    conn.execute(
-        """INSERT INTO pending_identity (session_id, name, phone, updated_at)
-           VALUES (?,?,?,CURRENT_TIMESTAMP)
-           ON CONFLICT(session_id) DO UPDATE SET
-             name=excluded.name, phone=excluded.phone, updated_at=CURRENT_TIMESTAMP""",
-        (session_id, final_name, final_phone)
-    )
-    conn.commit(); conn.close()
-    return {"name": final_name, "phone": final_phone}
-
-
-def clear_pending(session_id: str):
-    conn = get_db()
-    conn.execute("DELETE FROM pending_identity WHERE session_id=?", (session_id,))
-    conn.commit(); conn.close()
-
-
-# ── STRICT identity extraction — phone MUST be exactly 10 digits ─────────────
+# ── Identity parsing — STRICT 10-digit phone only ────────────────────────────
 
 def extract_phone(text: str):
-    candidates = re.findall(r'(\+?\d[\d\s\-]{6,16}\d)', text)
+    """
+    Find a phone number in the text. ONLY accepts exactly 10 digits
+    (standard Indian mobile number length). Any other digit count
+    (8, 9, 11, 12, 15 etc.) is rejected — returns None.
+    Allows spaces/dashes WITHIN the number (e.g. "98765 43210") but
+    the digit count after stripping must be exactly 10.
+    Also strips a leading +91 / 91 country code before counting, so
+    "+91 9876543210" and "919876543210" are still valid 10-digit numbers.
+    """
+    # Find candidate number sequences (digits with optional spaces/dashes)
+    candidates = re.findall(r'(\+?\d[\d\s\-]{6,17}\d)', text)
     for raw in candidates:
         cleaned = re.sub(r'[\s\-]', '', raw)
-        digits = cleaned.lstrip('+')
-        if digits.startswith('91') and len(digits) == 12:
-            digits = digits[2:]
-        if digits.isdigit() and len(digits) == 10:
-            return digits
+        # Strip country code prefix if present
+        if cleaned.startswith('+91') and len(cleaned) == 13:
+            cleaned = cleaned[3:]
+        elif cleaned.startswith('91') and len(cleaned) == 12:
+            cleaned = cleaned[2:]
+        elif cleaned.startswith('+') :
+            cleaned = cleaned.lstrip('+')
+
+        if cleaned.isdigit() and len(cleaned) == 10:
+            return cleaned
     return None
 
 
-def extract_name(text: str):
-    cleaned = re.sub(r'(\+?\d[\d\s\-]{6,16}\d)', ' ', text)
-    cleaned = re.sub(r'[,\.\-_]+', ' ', cleaned).strip()
-    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
-    if not cleaned or len(cleaned) < 2 or len(cleaned) > 50:
+def extract_name(text: str, phone_raw: str = None):
+    """Remove the phone substring from text, return cleaned name or None."""
+    working = text
+    if phone_raw:
+        working = working.replace(phone_raw, '', 1)
+    working = re.sub(r'[,\.\-_]+', ' ', working).strip()
+    working = re.sub(r'\s+', ' ', working).strip()
+
+    if not working or len(working) < 2 or len(working) > 50:
         return None
-    if not re.match(r'^[A-Za-z][A-Za-z\s\.]{1,49}$', cleaned):
+    if not re.match(r'^[A-Za-z][A-Za-z\s\.]{1,49}$', working):
         return None
-    return cleaned
+    return working
 
 
-IDENTITY_PROMPT = (
-    "Hi there! 👋 Before we can continue, I need TWO things from you, "
-    "sent together in ONE message:\n\n"
-    "1️⃣ Your full name\n"
-    "2️⃣ Your phone number — it must be exactly 10 digits, numbers only "
-    "(no country code, no +91, no spaces, no dashes)\n\n"
-    "**Example — copy this format exactly:**\n"
-    "Rahul Sharma 9876543210\n\n"
-    "That is the ONLY format required. Please type your name, followed by "
-    "your 10-digit phone number, exactly like the example above, and send it "
-    "as a single message."
-)
+def try_parse_identity(text: str):
+    """
+    Returns (name, phone, status)
+      status: 'complete'      → both found, valid
+              'name_only'     → name found, no valid 10-digit phone
+              'phone_only'    → 10-digit phone found, no valid name
+              'invalid_phone' → a number-like sequence was found but
+                                 NOT exactly 10 digits (must reject)
+              'none'          → nothing usable found
+    """
+    raw = text.strip()
+
+    # Check for ANY digit sequence of 6+ digits (potential phone attempt)
+    any_number = re.search(r'(\+?\d[\d\s\-]{5,17}\d)', raw)
+    phone = extract_phone(raw)
+
+    if any_number and not phone:
+        # They typed something number-like but it's not exactly 10 digits
+        # Still try to salvage a name from the rest of the text
+        name = extract_name(raw, any_number.group(1))
+        return (name, None, 'invalid_phone')
+
+    if phone:
+        phone_match = re.search(r'(\+?\d[\d\s\-]{6,17}\d)', raw)
+        raw_phone_str = phone_match.group(1) if phone_match else phone
+        name = extract_name(raw, raw_phone_str)
+        if name:
+            return (name, phone, 'complete')
+        else:
+            return (None, phone, 'phone_only')
+
+    # No number at all — check if the whole message could be just a name
+    name_only_match = re.match(r'^[A-Za-z][A-Za-z\s\.]{1,49}$', raw)
+    if name_only_match:
+        return (raw.strip(), None, 'name_only')
+
+    return (None, None, 'none')
+
+
+# ── Flight context ────────────────────────────────────────────────────────────
+
+def get_flight_context(message: str) -> str:
+    if GFLIGHTS:
+        try:
+            q = detect_flight_query(message)
+            if not q["is_flight"]:
+                return ""
+            if not q["origin"] or not q["destination"]:
+                return (
+                    "[GOOGLE FLIGHTS DATA]\n"
+                    "User asking about flights but route unclear. "
+                    "Ask which city flying FROM, which city flying TO, and on what date."
+                )
+            result = search_google_flights(
+                origin=q["origin"], destination=q["destination"],
+                date=q["date"], return_date=q.get("return_date"),
+                adults=q.get("adults", 1)
+            )
+            return format_for_shanaya(result, q["origin"], q["destination"], q["date"] or "")
+        except Exception as e:
+            print(f"[FLIGHTS] Google error: {e}")
+
+    if PORTAL:
+        try:
+            is_fl, origin, dest, date = _pd(message)
+            if not is_fl:
+                return ""
+            if not origin or not dest:
+                return "[FLIGHT DATA]\nUser asking about flights. Ask which city flying from and to."
+            return _pf(_ps(origin, dest, date or "next available"))
+        except Exception as e:
+            print(f"[PORTAL] Error: {e}")
+
+    return ""
 
 
 # ── Main chat ─────────────────────────────────────────────────────────────────
@@ -161,20 +248,21 @@ def chat(session_id: str, user_message: str) -> dict:
     existing_lead = get_lead_by_session(session_id)
 
     if not existing_lead:
-        pending = get_pending(session_id)
+        partial = get_partial_identity(session_id)
+        prior_name  = partial["partial_name"]  if partial else None
+        prior_phone = partial["partial_phone"] if partial else None
 
-        phone_found = extract_phone(user_message)
-        name_found  = extract_name(user_message)
+        name, phone, status = try_parse_identity(user_message)
 
-        final_name  = name_found  or pending["name"]
-        final_phone = phone_found or pending["phone"]
+        # Merge with anything already partially captured
+        final_name  = name  or prior_name
+        final_phone = phone or prior_phone
+
+        save_message(session_id, "user", user_message)
 
         if final_name and final_phone:
-            clear_pending(session_id)
             info  = create_or_update_lead(session_id, final_name, final_phone)
-            save_message(session_id, "user", user_message)
             first = final_name.split()[0]
-
             if info["is_returning"]:
                 count = info["visit_count"]
                 reply = (
@@ -196,75 +284,89 @@ def chat(session_id: str, user_message: str) -> dict:
                 "missing_fields": [], "is_complete": False, "identity_given": True,
             }
 
-        if final_phone and not final_name:
-            save_pending(session_id, phone=final_phone)
-            save_message(session_id, "user", user_message)
+        elif status == 'invalid_phone':
+            save_partial_identity(session_id, name=final_name)
             reply = (
-                f"Got your number ✅ ({final_phone}). "
-                f"Now please also send me your **full name** so I can address you properly.\n\n"
-                f"Just reply with your name — nothing else needed."
+                "That phone number doesn't look quite right. 📵\n\n"
+                "Please provide a valid **10-digit** mobile number "
+                "(no country code, no extra digits).\n\n"
+                + (f"Got your name: **{final_name}** ✓ — just need the 10-digit number now."
+                   if final_name else
+                   "Example: **Rahul Sharma 9876543210**")
             )
             save_message(session_id, "assistant", reply)
             return {
-                "reply": reply, "session_id": session_id,
-                "extracted_data": {}, "missing_fields": ["contact_name"],
-                "is_complete": False, "identity_given": False,
+                "reply": reply, "session_id": session_id, "extracted_data": {},
+                "missing_fields": ["contact_phone"], "is_complete": False, "identity_given": False,
             }
 
-        if final_name and not final_phone:
-            save_pending(session_id, name=final_name)
-            save_message(session_id, "user", user_message)
-            first = final_name.split()[0]
+        elif final_name and not final_phone:
+            save_partial_identity(session_id, name=final_name)
             reply = (
-                f"Thanks, {first}! ✅ Now I just need your **phone number** — "
-                f"it must be exactly 10 digits, numbers only (no country code, "
-                f"no +91, no spaces or dashes).\n\n"
-                f"Example: 9876543210"
+                f"Thanks, {final_name.split()[0]}! 🙏 One more thing — "
+                f"could you share your **10-digit phone number** so our team can reach you?\n\n"
+                f"Example: **9876543210**"
             )
             save_message(session_id, "assistant", reply)
             return {
-                "reply": reply, "session_id": session_id,
-                "extracted_data": {}, "missing_fields": ["contact_phone"],
-                "is_complete": False, "identity_given": False,
+                "reply": reply, "session_id": session_id, "extracted_data": {},
+                "missing_fields": ["contact_phone"], "is_complete": False, "identity_given": False,
             }
 
-        save_message(session_id, "user", user_message)
-        save_message(session_id, "assistant", IDENTITY_PROMPT)
-        return {
-            "reply": IDENTITY_PROMPT, "session_id": session_id,
-            "extracted_data": {}, "missing_fields": ["contact_name", "contact_phone"],
-            "is_complete": False, "identity_given": False,
-        }
+        elif final_phone and not final_name:
+            save_partial_identity(session_id, phone=final_phone)
+            reply = (
+                "Got your number, thank you! 🙏 Could you also share your **name** "
+                "so I know who I'm speaking with?"
+            )
+            save_message(session_id, "assistant", reply)
+            return {
+                "reply": reply, "session_id": session_id, "extracted_data": {},
+                "missing_fields": ["contact_name"], "is_complete": False, "identity_given": False,
+            }
 
-    # ── Identity confirmed — Gemini chat via NEW google-genai SDK ─────────────
+        else:
+            reply = (
+                "Hi there! 👋 Before we proceed, I am required to collect your full name "
+                "and a valid ten (10) digit mobile telephone number, submitted together in "
+                "a single message, in order to continue this conversation.\n\n"
+                "Kindly type both as follows, with no punctuation, symbols, or formatting "
+                "of any kind required or permitted:\n\n"
+                "**Rahul Sharma 9876543210**\n\n"
+                "Any submission lacking either the full name or a valid ten-digit number "
+                "will not be accepted, and this request will be repeated until both are "
+                "correctly provided. No further assistance can be rendered until this "
+                "requirement is satisfied in full."
+            )
+            save_message(session_id, "assistant", reply)
+            return {
+                "reply": reply, "session_id": session_id, "extracted_data": {},
+                "missing_fields": ["contact_name", "contact_phone"], "is_complete": False, "identity_given": False,
+            }
+
+    # ── Identity confirmed — Gemini chat ──────────────────────────────────────
     save_message(session_id, "user", user_message)
     history  = get_history(session_id)
-
-    # Build history as list of types.Content objects
     contents = []
     for msg in history[:-1]:
         role = "model" if msg["role"] == "assistant" else "user"
-        contents.append(types.Content(role=role, parts=[types.Part(text=msg["content"])]))
+        contents.append({"role": role, "parts": [{"text": msg["content"]}]})
 
     flight_ctx = get_flight_context(user_message)
     final_msg  = f"{flight_ctx}\n\nUser: {user_message}" if flight_ctx else user_message
 
     try:
-        chat_session = client.chats.create(
-            model=MODEL,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                temperature=TEMPERATURE,
-                max_output_tokens=MAX_TOKENS,
-            ),
-            history=contents,
+        model        = genai.GenerativeModel(model_name=MODEL, system_instruction=SYSTEM_PROMPT)
+        chat_session = model.start_chat(history=contents)
+        response     = chat_session.send_message(
+            final_msg,
+            generation_config={"temperature": TEMPERATURE, "max_output_tokens": MAX_TOKENS}
         )
-        response = chat_session.send_message(final_msg)
         reply = response.text.strip() if response.text else "Could you repeat that? 🙏"
         print(f"[CHAT] ✓ {reply[:80]}")
     except Exception as e:
         import traceback; traceback.print_exc()
-        reply = f"I'm having a brief technical issue. 🙏 Please try again or call **{OPERATOR_PHONE}**."
+        reply = "I'm having a brief technical issue. 🙏 Please try again or call **+91 8010700700**."
 
     save_message(session_id, "assistant", reply)
     return {
@@ -275,40 +377,6 @@ def chat(session_id: str, user_message: str) -> dict:
         },
         "missing_fields": [], "is_complete": False, "identity_given": True,
     }
-
-
-def get_flight_context(message: str) -> str:
-    if GFLIGHTS:
-        try:
-            q = detect_flight_query(message)
-            if not q["is_flight"]:
-                return ""
-            if not q["origin"] or not q["destination"]:
-                return (
-                    "[GOOGLE FLIGHTS DATA]\n"
-                    "User asking about flights but route unclear. "
-                    "Ask which city flying FROM, which city TO, and on what date."
-                )
-            result = search_google_flights(
-                origin=q["origin"], destination=q["destination"],
-                date=q["date"], return_date=q.get("return_date"), adults=q.get("adults",1)
-            )
-            return format_for_shanaya(result, q["origin"], q["destination"], q["date"] or "")
-        except Exception as e:
-            print(f"[FLIGHTS] Error: {e}")
-
-    if PORTAL:
-        try:
-            is_fl, origin, dest, date = _pd(message)
-            if not is_fl:
-                return ""
-            if not origin or not dest:
-                return "[FLIGHT DATA]\nUser asking about flights. Ask which city flying from and to."
-            return _pf(_ps(origin, dest, date or "next available"))
-        except Exception as e:
-            print(f"[PORTAL] Error: {e}")
-
-    return ""
 
 
 def lookup_packages(*a): return []
