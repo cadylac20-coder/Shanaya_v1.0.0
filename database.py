@@ -13,12 +13,11 @@ if not TURSO_AUTH_TOKEN:
 class _Row(list):
     """
     Minimal drop-in replacement for sqlite3.Row so existing code
-    (row["contact_phone"], row["visit_count"], etc.) keeps working
-    with zero changes to ai_engine.py / main.py — no sqlite3 import,
-    no local database, Turso only.
+    (row["contact_phone"], row["visit_count"], etc.) keeps working —
+    no sqlite3 import, no local database, Turso only.
     """
-    def __init__(self, cursor, row):
-        self._columns = [d[0] for d in cursor.description]
+    def __init__(self, columns, row):
+        self._columns = columns
         super().__init__(row)
 
     def __getitem__(self, key):
@@ -30,11 +29,68 @@ class _Row(list):
         return list(self._columns)
 
 
+class _CursorWrapper:
+    """
+    Wraps the native libsql Cursor. The native object is a compiled
+    extension type — it has no row_factory hook, so instead of trying
+    to attach one, we intercept fetchone()/fetchall() here and convert
+    each raw row into a _Row using cursor.description for column names.
+    """
+    def __init__(self, cursor):
+        self._cursor = cursor
+
+    def _columns(self):
+        return [d[0] for d in (self._cursor.description or [])]
+
+    def execute(self, sql, params=None):
+        if params is None:
+            self._cursor.execute(sql)
+        else:
+            self._cursor.execute(sql, params)
+        return self
+
+    def fetchone(self):
+        row = self._cursor.fetchone()
+        if row is None:
+            return None
+        return _Row(self._columns(), row)
+
+    def fetchall(self):
+        cols = self._columns()
+        return [_Row(cols, row) for row in self._cursor.fetchall()]
+
+    def __getattr__(self, name):
+        # passthrough for anything else (rowcount, lastrowid, close, etc.)
+        return getattr(self._cursor, name)
+
+
+class _ConnectionWrapper:
+    """Wraps the native libsql Connection so conn.execute(...) and conn.cursor() both return row-aware cursors."""
+    def __init__(self, conn):
+        self._conn = conn
+
+    def cursor(self):
+        return _CursorWrapper(self._conn.cursor())
+
+    def execute(self, sql, params=None):
+        cur = self.cursor()
+        cur.execute(sql, params)
+        return cur
+
+    def commit(self):
+        self._conn.commit()
+
+    def close(self):
+        self._conn.close()
+
+    def __getattr__(self, name):
+        return getattr(self._conn, name)
+
+
 def get_db():
     """Connection to Turso (libSQL). This is the ONLY database backend — no local SQLite fallback."""
-    conn = libsql.connect(TURSO_DATABASE_URL, auth_token=TURSO_AUTH_TOKEN)
-    conn.row_factory = _Row
-    return conn
+    raw_conn = libsql.connect(TURSO_DATABASE_URL, auth_token=TURSO_AUTH_TOKEN)
+    return _ConnectionWrapper(raw_conn)
 
 
 print("✅ Shanaya DB — connected to Turso (libSQL): data is permanent")
