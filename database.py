@@ -1,17 +1,47 @@
-import sqlite3
 import os
+import libsql
 
-DB_PATH = os.getenv("DB_PATH", "mkov_shanaya.db")
+TURSO_DATABASE_URL = os.getenv("TURSO_DATABASE_URL")
+TURSO_AUTH_TOKEN    = os.getenv("TURSO_AUTH_TOKEN")
+
+if not TURSO_DATABASE_URL:
+    raise RuntimeError("TURSO_DATABASE_URL not set. Add it in Render → Environment.")
+if not TURSO_AUTH_TOKEN:
+    raise RuntimeError("TURSO_AUTH_TOKEN not set. Add it in Render → Environment.")
 
 
-def get_db() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+class _Row(list):
+    """
+    Minimal drop-in replacement for sqlite3.Row so existing code
+    (row["contact_phone"], row["visit_count"], etc.) keeps working
+    with zero changes to ai_engine.py / main.py — no sqlite3 import,
+    no local database, Turso only.
+    """
+    def __init__(self, cursor, row):
+        self._columns = [d[0] for d in cursor.description]
+        super().__init__(row)
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            return list.__getitem__(self, self._columns.index(key))
+        return list.__getitem__(self, key)
+
+    def keys(self):
+        return list(self._columns)
+
+
+def get_db():
+    """Connection to Turso (libSQL). This is the ONLY database backend — no local SQLite fallback."""
+    conn = libsql.connect(TURSO_DATABASE_URL, auth_token=TURSO_AUTH_TOKEN)
+    conn.row_factory = _Row
     return conn
 
 
+print("✅ Shanaya DB — connected to Turso (libSQL): data is permanent")
+
+
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db()
     c    = conn.cursor()
 
     c.execute("""
@@ -61,7 +91,7 @@ def init_db():
         )
     """)
 
-    # NEW — holds a name OR phone given before the other half arrives,
+    # Holds a name OR phone given before the other half arrives,
     # so Shanaya can ask for only the missing piece instead of restarting.
     c.execute("""
         CREATE TABLE IF NOT EXISTS partial_identity (
@@ -134,4 +164,4 @@ def init_db():
 
     conn.commit()
     conn.close()
-    print(f"✓ Shanaya DB ready at {DB_PATH}")
+    print("✓ Shanaya DB ready — Turso (libSQL)")
